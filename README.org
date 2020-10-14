@@ -29,10 +29,24 @@
   - get the docker container
     docker run -dit --network="host" -p 5000:5000 --name SpacerBackend levn/spacer_backend:latest
 
+  - get env variables
+    https://github.com/aishr/SpacerProseBackend/blob/master/envVars/.env
+
   - copy the relevant files
     docker cp main.py SpacerBackend:/SpacerBackend/pobvis/app/main.py
-  
-  - get env variables
-    https://github.com/aishr/tiramisu/blob/master/prose/learner/envVars/.env
+    docker cp .env SpacerBackend:/SpacerBackend/pobvis/app/.env
 
-  - in .env, change TABLE_NAME to your name
+  - run the container
+    docker exec -it SpacerBackend bash -c "python3 main.py -z3 /SpacerBackend/z3s/NhamZ3/build/z3"
+
+* Prose Backend
+  - clone the repo
+    git clone https://github.com/aishr/SpacerProseBackend.git
+    git clone git@github.com:aishr/SpacerProseBackend.git
+
+  - change to working directory
+    cd SpacerProseBackend/SpacerTransformationsAPI/SpacerTransformationsAPI/
+
+  - run project
+    dotnet run
+    
