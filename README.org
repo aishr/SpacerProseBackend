@@ -47,6 +47,10 @@
   - change to working directory
     cd SpacerProseBackend/SpacerTransformationsAPI/SpacerTransformationsAPI/
 
+  - edit environment variables
+    change LD_LIBRARY_PATH under SpacerTransformationsAPIDev to point to your local version of z3
+    change TABLE_NAME to the same table name in the previous section (should be your name)
+
   - run project
     dotnet run
     
