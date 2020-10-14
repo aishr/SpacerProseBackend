@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Amazon;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
+using Microsoft.Z3;
+using SpacerTransformationsAPI.Models;
+using SpacerTransformationsAPI.Prose;
+
+namespace SpacerTransformationsAPI.Functions
+{
+    public static class DynamoDb
+    {
+        
+        private static readonly AmazonDynamoDBClient Client = new AmazonDynamoDBClient(
+            new BasicAWSCredentials(Environment.GetEnvironmentVariable("ACCESS_KEY"),
+                Environment.GetEnvironmentVariable("SECRET_KEY")), 
+            RegionEndpoint.USEast2);
+        
+        public static async Task<GetItemResponse> GetLemmas(string id)
+        {
+            var key = new Dictionary<string, AttributeValue>()
+            {
+                {"Id", new AttributeValue(id)}
+            };
+            var request = new GetItemRequest(Environment.GetEnvironmentVariable("TABLE_NAME"), key);
+
+            return await Client.GetItemAsync(request);
+        }
+
+        public static SpacerInstance ConvertDbResults(GetItemResponse response)
+        {
+            var results = new SpacerInstance(response.Item["Id"].S);
+            foreach (var lemmaNum in response.Item)
+            {
+                if (lemmaNum.Key == "Id") continue;
+                var potentialList = lemmaNum.Value.M["lhs"].L;
+                results.Lemmas.Add(int.Parse(lemmaNum.Key), new Lemma()
+                {
+                    Edited = lemmaNum.Value.M["edited"].S,
+                    Readable = lemmaNum.Value.M["readable"].S,
+                    Raw = lemmaNum.Value.M["raw"].S,
+                    Lhs = potentialList.Count == 0 ? new List<int>() : potentialList.Select(x => int.Parse(x.N)).ToList(),
+                    Changed = lemmaNum.Value.M["changed"].BOOL
+                });
+            }
+            return results;
+        }
+
+        public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamples(Context ctx, IEnumerable<Lemma> lemmas, string prefix)
+        {
+             var results = new List<Tuple<Node, Node>>();
+             foreach (var lemma in lemmas)
+             {
+                 if (!lemma.Changed) continue;
+                 var input = SmtLib.StringToSmtLib(ctx, string.Format(prefix, lemma.Raw));
+                 var inputTree = Utils.HandleSmtLibParsed(input, ctx);
+                 var outputTree = Semantics.Transform(inputTree, lemma.Lhs);
+                 results.Add(new Tuple<Node, Node>(inputTree, outputTree));
+             }
+
+             return results;
+        }
+    }
+}

@@ -1,0 +1,16 @@
+using SpacerTransformationsAPI.Models;
+using SpacerTransformationsAPI.Prose;
+using System.Collections.Generic;
+
+using semantics SpacerTransformationsAPI.Prose.Semantics;
+using learners SpacerTransformationsAPI.Prose.WitnessFunctions;
+
+language Transformations;
+
+@complete feature double Score = RankingScore;
+
+@start Node outputTree := Transform(inputTree, leftSide);
+List<int> leftSide := Filter(inputTree, name) | FilterAllButLast(inputTree);
+
+@input Node inputTree;
+string name;

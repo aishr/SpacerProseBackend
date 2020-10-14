@@ -1,0 +1,47 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:34727",
+      "sslPort": 44329
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "weatherforecast",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "SpacerTransformationsAPIDev": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "weatherforecast",
+      "applicationUrl": "http://localhost:2000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "LD_LIBRARY_PATH": "/home/ash/z3/build",
+        "ACCESS_KEY": "AKIAINDOHBBNJSCA3ZWQ",
+        "SECRET_KEY": "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",
+        "TABLE_NAME": "ash"
+      }
+    },
+    "SpacerTransformationsAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "SpacerTranformationsAPI",
+      "applicationUrl": "http://localhost:2000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "LD_LIBRARY_PATH": "/home/ash/z3/build",
+        "ACCESS_KEY": "AKIAINDOHBBNJSCA3ZWQ",
+        "SECRET_KEY": "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",
+        "TABLE_NAME": "ash"
+      }
+    }
+  }
+}
