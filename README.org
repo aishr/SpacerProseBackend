@@ -23,6 +23,17 @@
     git clone https://github.com/aishr/SpacerVisBackend.git
     git clone git@github.com:aishr/SpacerVisBackend.git
 
+** Scripted
+   - change to working directory
+     cd SpacerVisBackend
+   
+  - get env variables and place in SpacerVisBackend/pobvis/app/
+    https://github.com/aishr/SpacerProseBackend/blob/master/envVars/.env
+
+   - run startBackend.sh
+     ./startBackend.sh
+     
+** Manual
   - change to working directory for pip packages
     cd SpacerVisBackend/pobvis/
 
