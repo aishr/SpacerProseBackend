@@ -23,11 +23,20 @@
     git clone https://github.com/aishr/SpacerVisBackend.git
     git clone git@github.com:aishr/SpacerVisBackend.git
 
-  - change to working directory
-    cd SpacerVisBackend/pobvis/app
+  - change to working directory for pip packages
+    cd SpacerVisBackend/pobvis/
 
   - get the docker container
     docker run -dit --network="host" -p 5000:5000 --name SpacerBackend levn/spacer_backend:latest
+
+  - copy in requirements.txt
+    docker cp requirements.txt SpacerBackend:/SpacerBackend/pobvis/requirements.txt
+
+  - install requirements
+    docker exec -it SpacerBackend bash -c "pip3 install -r /SpacerBackend/pobvis/requirements.txt"
+
+  - change to working directory
+    cd app/
 
   - get env variables
     https://github.com/aishr/SpacerProseBackend/blob/master/envVars/.env
