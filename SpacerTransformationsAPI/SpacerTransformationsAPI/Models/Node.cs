@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Z3;
+using SpacerTransformationsAPI.Functions;
 
 namespace SpacerTransformationsAPI.Models
 {
@@ -95,5 +96,44 @@ namespace SpacerTransformationsAPI.Models
             return result || Expr.ToString() == id;
         }
         
+        public IList<Expr> FlattenTree()
+        {
+            var exprs = new List<Expr>();
+            if (Expr.NumArgs == 0 || Expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_SELECT)
+            {
+                exprs.Add(Expr);
+            }
+            foreach (var child in Children)
+            {
+                exprs = exprs.Concat(child.FlattenTree()).ToList();
+            }
+
+            return exprs;
+        }
+        
+        
+        public List<string> GetProcesses()
+        {
+            var children = new List<string>();
+
+            foreach (var child in Children)
+            {
+                var exprs = child.FlattenTree();
+                var indices = Utils.FindSelect(exprs.ToList());
+
+                foreach (int index in indices)
+                {
+                    var selectExpr = exprs[index];
+                    var process = selectExpr.Args[1].ToString();
+
+                    if (!children.Contains(process))
+                    {
+                        children.Add(process);
+                    }
+                }
+            }
+
+            return children;
+        }
     }
 }

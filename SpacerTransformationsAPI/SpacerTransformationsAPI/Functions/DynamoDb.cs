@@ -14,7 +14,6 @@ namespace SpacerTransformationsAPI.Functions
 {
     public static class DynamoDb
     {
-        
         private static readonly AmazonDynamoDBClient Client = new AmazonDynamoDBClient(
             new BasicAWSCredentials(Environment.GetEnvironmentVariable("ACCESS_KEY"),
                 Environment.GetEnvironmentVariable("SECRET_KEY")), 

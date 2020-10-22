@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ProgramSynthesis;
@@ -6,6 +5,7 @@ using Microsoft.ProgramSynthesis.Learning;
 using Microsoft.ProgramSynthesis.Rules;
 using Microsoft.ProgramSynthesis.Specifications;
 using Microsoft.Z3;
+using SpacerTransformationsAPI.Functions;
 using SpacerTransformationsAPI.Models;
 
 namespace SpacerTransformationsAPI.Prose
@@ -29,7 +29,7 @@ namespace SpacerTransformationsAPI.Prose
                 var children = before.Children;
                 var numLeftSide = after.Type == Z3_decl_kind.Z3_OP_AND ? after.Children.Count : after.Children[0].Type == Z3_decl_kind.Z3_OP_AND ? after.Children[0].Children.Count : 1;
                 var listOfIndices = Enumerable.Range(0, children.Count);
-                var possibleLists = GetKCombs(listOfIndices, numLeftSide);
+                var possibleLists = Utils.GetKCombs(listOfIndices, numLeftSide);
                 foreach (var sub in possibleLists)
                 {
                     var subList = sub.ToList();
@@ -71,13 +71,34 @@ namespace SpacerTransformationsAPI.Prose
             return new DisjunctiveExamplesSpec(examples);
         }
         
-        static IEnumerable<IEnumerable<T>> GetKCombs<T>(IEnumerable<T> list, int length) where T : IComparable
+        
+        //List<int> FilterByProcess(Node inputTree, string process)
+        [WitnessFunction("FilterByProcess", 1)]
+        public DisjunctiveExamplesSpec WitnessProcess(GrammarRule rule, ExampleSpec spec)
         {
-            if (length == 1) return list.Select(t => new[] { t });
-            return GetKCombs(list, length - 1)
-                .SelectMany(t => list.Where(o => o.CompareTo(t.Last()) > 0), 
-                    (t1, t2) => t1.Concat(new[] { t2 }));
+            var examples = new Dictionary<State, IEnumerable<object>>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (List<int>)spec.Examples[input];
+                var children = before.GetProcesses();    
+                foreach (var child in children)
+                {
+                    if (Semantics.FilterByProcess(before, child).OrderBy(i => i)
+                        .SequenceEqual(after.OrderBy(i => i)))
+                    {
+                        if (!examples.ContainsKey(input))
+                        {
+                            examples[input] = new List<string>();
+                        }
+                        ((List<string>)examples[input]).Add(child);
+                    }
+                }
+            }
+
+            return new DisjunctiveExamplesSpec(examples);
         }
+        
 
     }
 }

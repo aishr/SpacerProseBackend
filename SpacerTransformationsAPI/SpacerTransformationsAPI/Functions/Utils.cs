@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.ProgramSynthesis;
 using Microsoft.ProgramSynthesis.Diagnostics;
 using Microsoft.ProgramSynthesis.Specifications;
@@ -58,5 +59,27 @@ namespace SpacerTransformationsAPI.Functions
             return spec;
         }
         
+        public static IEnumerable<IEnumerable<T>> GetKCombs<T>(IEnumerable<T> list, int length) where T : IComparable
+        {
+            if (length == 1) return list.Select(t => new[] { t });
+            return GetKCombs(list, length - 1)
+                .SelectMany(t => list.Where(o => o.CompareTo(t.Last()) > 0), 
+                    (t1, t2) => t1.Concat(new[] { t2 }));
+        }
+        
+        public static IEnumerable<int> FindSelect(List<Expr> exprs)
+        {
+            var indices = new List<int>();
+
+            for (var i = 0; i < exprs.Count; ++i)
+            {
+                if (exprs[i].FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_SELECT)
+                {
+                    indices.Add(i);
+                }
+            }
+
+            return indices;
+        }
     }
 }

@@ -10,7 +10,8 @@ language Transformations;
 @complete feature double Score = RankingScore;
 
 @start Node outputTree := Transform(inputTree, leftSide);
-List<int> leftSide := Filter(inputTree, name) | FilterAllButLast(inputTree);
+List<int> leftSide := Filter(inputTree, name) | FilterAllButLast(inputTree) | FilterByProcess(inputTree, process);
 
 @input Node inputTree;
 string name;
+string process;
