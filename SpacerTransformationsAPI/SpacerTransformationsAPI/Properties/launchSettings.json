@@ -25,9 +25,9 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LD_LIBRARY_PATH": "/home/ash/z3/build",
-        "ACCESS_KEY": "AKIAINDOHBBNJSCA3ZWQ",
-        "SECRET_KEY": "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",
-        "TABLE_NAME": "ash"
+        "ACCESS_KEY": "AKIASOHWIFLXIIGPYLSH",
+        "SECRET_KEY": "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",
+        "TABLE_NAME": "spacer-visualization"
       }
     },
     "SpacerTransformationsAPI": {
@@ -38,9 +38,9 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production",
         "LD_LIBRARY_PATH": "/home/ash/z3/build",
-        "ACCESS_KEY": "AKIAINDOHBBNJSCA3ZWQ",
-        "SECRET_KEY": "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",
-        "TABLE_NAME": "ash"
+        "ACCESS_KEY": "AKIASOHWIFLXIIGPYLSH",
+        "SECRET_KEY": "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",
+        "TABLE_NAME": "spacer-visualization"
       }
     }
   }
