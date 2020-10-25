@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ProgramSynthesis;
+using Microsoft.ProgramSynthesis.AST;
 using Microsoft.ProgramSynthesis.Compiler;
 using Microsoft.ProgramSynthesis.Diagnostics;
 using Microsoft.ProgramSynthesis.Learning;
@@ -41,6 +42,7 @@ namespace SpacerTransformationsAPI.Controllers
 
                 var reader = new StreamReader(PathToFiles + grammarFileName);
                 var grammar = await reader.ReadToEndAsync();
+                
                 _grammar = DSLCompiler.Compile(
                     new CompilerOptions()
                     {
@@ -53,6 +55,7 @@ namespace SpacerTransformationsAPI.Controllers
 
                 var rawLemmas = await DynamoDb.GetLemmas(instance);
                 var lemmas = DynamoDb.ConvertDbResults(rawLemmas);
+                ProgramNode finalProgram;
                 using (var ctx = new Context())
                 {
                     var inputExamples = DynamoDb.GetInputOutputExamples(ctx, lemmas.Lemmas
@@ -71,7 +74,8 @@ namespace SpacerTransformationsAPI.Controllers
                         });
                     var learned = _prose.LearnGrammarTopK(spec, scoreFeature);
                     Console.WriteLine("Possible Programs: " + learned);
-                    var program = learned.RealizedPrograms.First();
+                    finalProgram = learned.RealizedPrograms.First();
+                    
                     foreach (var kvp in lemmas.Lemmas)
                     {
                         if (kvp.Value.Raw != "")
@@ -82,8 +86,8 @@ namespace SpacerTransformationsAPI.Controllers
                             {
                                 var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
                                 var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
-                                var result = (Node) program.Invoke(stateInput);
-                                var lhs = (List<int>) program.Children[1].Invoke(stateInput);
+                                var result = (Node) finalProgram.Invoke(stateInput);
+                                var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
                                 lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
                                 lemmas.Lemmas[kvp.Key].Lhs = lhs;
                             }
@@ -93,10 +97,12 @@ namespace SpacerTransformationsAPI.Controllers
                     ctx.Dispose();
                 }
                 Console.WriteLine("Transformation complete");
-                return Ok(JsonConvert.SerializeObject(lemmas.Lemmas));
+                var response = new ProseResponse(finalProgram.ToString(), lemmas.Lemmas);
+                return Ok(JsonConvert.SerializeObject(response));
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Error");
                 return StatusCode(500, ex.Message);
             }
         }
