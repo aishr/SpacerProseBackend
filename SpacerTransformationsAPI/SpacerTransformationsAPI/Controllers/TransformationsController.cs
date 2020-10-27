@@ -102,7 +102,7 @@ namespace SpacerTransformationsAPI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error");
+                Console.WriteLine("Error: " ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
