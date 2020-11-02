@@ -30,23 +30,45 @@ namespace SpacerTransformationsAPI.Functions
             return await Client.GetItemAsync(request);
         }
 
-        public static SpacerInstance ConvertDbResults(GetItemResponse response)
+        public static SpacerInstance GetChangedLemmas(GetItemResponse response)
         {
             var results = new SpacerInstance(response.Item["Id"].S);
             foreach (var lemmaNum in response.Item)
             {
                 if (lemmaNum.Key == "Id") continue;
                 var potentialList = lemmaNum.Value.M["lhs"].L;
-                results.Lemmas.Add(int.Parse(lemmaNum.Key), new Lemma()
+                if (lemmaNum.Value.M["changed"].BOOL)
                 {
-                    Edited = lemmaNum.Value.M["edited"].S,
-                    Readable = lemmaNum.Value.M["readable"].S,
-                    Raw = lemmaNum.Value.M["raw"].S,
-                    Lhs = potentialList.Count == 0 ? new List<int>() : potentialList.Select(x => int.Parse(x.N)).ToList(),
-                    Changed = lemmaNum.Value.M["changed"].BOOL
-                });
+                    results.Lemmas.Add(int.Parse(lemmaNum.Key), CreateLemma(lemmaNum.Value, potentialList));
+                }
+            }
+
+            return results;
+        }
+
+        public static SpacerInstance DbToSpacerInstance(GetItemResponse response)
+        {
+            var results = new SpacerInstance(response.Item["Id"].S);
+            foreach (var lemmaNum in response.Item)
+            {
+                if (lemmaNum.Key == "Id") continue;
+                var potentialList = lemmaNum.Value.M["lhs"].L;
+                results.Lemmas.Add(int.Parse(lemmaNum.Key), CreateLemma(lemmaNum.Value, potentialList));
             }
             return results;
+        }
+
+        private static Lemma CreateLemma(AttributeValue itemValue, List<AttributeValue> potentialList)
+        {
+            return new Lemma() 
+            {
+                 Edited = itemValue.M["edited"].S,
+                 Readable = itemValue.M["readable"].S,
+                 Raw = itemValue.M["raw"].S,
+                 Lhs = potentialList.Count == 0 ? new List<int>() : potentialList.Select(x => int.Parse(x.N)).ToList(),
+                 Changed = itemValue.M["changed"].BOOL
+            };
+            
         }
 
         public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamples(Context ctx, IEnumerable<Lemma> lemmas, string prefix)

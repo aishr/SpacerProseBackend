@@ -12,6 +12,7 @@ using Microsoft.ProgramSynthesis.Diagnostics;
 using Microsoft.ProgramSynthesis.Learning;
 using Microsoft.ProgramSynthesis.Learning.Logging;
 using Microsoft.ProgramSynthesis.Learning.Strategies;
+using Microsoft.ProgramSynthesis.VersionSpace;
 using Microsoft.Z3;
 using Newtonsoft.Json;
 using SpacerTransformationsAPI.Functions;
@@ -32,8 +33,9 @@ namespace SpacerTransformationsAPI.Controllers
                                                   "(assert {0})";
         private Result<Grammar> _grammar;
         private static SynthesisEngine _prose;
-        [HttpGet]
-        public async Task<ActionResult> ApplyTransformation(string instance)
+
+        [HttpPost]
+        public async Task<ActionResult> LearnTransformation([FromBody]string instance)
         {
             try
             {
@@ -51,11 +53,12 @@ namespace SpacerTransformationsAPI.Controllers
                             typeof(List<int>).GetTypeInfo().Assembly,
                             typeof(Semantics).GetTypeInfo().Assembly,
                             typeof(Node).GetTypeInfo().Assembly)
-                    });
+                    }
+                );
 
                 var rawLemmas = await DynamoDb.GetLemmas(instance);
-                var lemmas = DynamoDb.ConvertDbResults(rawLemmas);
-                ProgramNode finalProgram;
+                var lemmas = DynamoDb.GetChangedLemmas(rawLemmas);
+                ProgramSet learned;
                 using (var ctx = new Context())
                 {
                     var inputExamples = DynamoDb.GetInputOutputExamples(ctx, lemmas.Lemmas
@@ -72,7 +75,21 @@ namespace SpacerTransformationsAPI.Controllers
                             UseThreads = false,
                             CacheSize = int.MaxValue
                         });
-                    var learned = _prose.LearnGrammarTopK(spec, scoreFeature);
+                    learned = _prose.LearnGrammarTopK(spec, scoreFeature);
+                }
+                return Ok(JsonConvert.SerializeObject(learned.RealizedPrograms.ToList()));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ApplyTransformation(string instance)
+        {
+            
                     Console.WriteLine("Possible Programs: " + learned);
                     finalProgram = learned.RealizedPrograms.First();
                     
@@ -97,14 +114,6 @@ namespace SpacerTransformationsAPI.Controllers
                     ctx.Dispose();
                 }
                 Console.WriteLine("Transformation complete");
-                var response = new ProseResponse(finalProgram.ToString(), lemmas.Lemmas);
-                return Ok(JsonConvert.SerializeObject(response));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                return StatusCode(500, ex.Message);
-            }
         }
     }
 }
