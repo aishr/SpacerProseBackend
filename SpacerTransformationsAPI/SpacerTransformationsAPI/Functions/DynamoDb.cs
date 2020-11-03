@@ -73,7 +73,7 @@ namespace SpacerTransformationsAPI.Functions
 
         public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamples(Context ctx, IEnumerable<Lemma> lemmas, string prefix)
         {
-             var results = new List<Tuple<Node, Node>>();
+            var results = new List<Tuple<Node, Node>>();
              foreach (var lemma in lemmas)
              {
                  if (!lemma.Changed) continue;

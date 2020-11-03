@@ -12,6 +12,8 @@ using Microsoft.ProgramSynthesis.Diagnostics;
 using Microsoft.ProgramSynthesis.Learning;
 using Microsoft.ProgramSynthesis.Learning.Logging;
 using Microsoft.ProgramSynthesis.Learning.Strategies;
+using Microsoft.ProgramSynthesis.Transformation.Tree.Build.NodeTypes;
+using Microsoft.ProgramSynthesis.Utils.Interactive;
 using Microsoft.ProgramSynthesis.VersionSpace;
 using Microsoft.Z3;
 using Newtonsoft.Json;
@@ -34,16 +36,12 @@ namespace SpacerTransformationsAPI.Controllers
         private Result<Grammar> _grammar;
         private static SynthesisEngine _prose;
 
-        [HttpPost]
-        public async Task<ActionResult> LearnTransformation([FromBody]string instance)
+        public TransformationsController()
         {
-            try
-            {
-                Console.WriteLine(instance);
                 const string grammarFileName = @"Prose/Transformations.grammar";
 
                 var reader = new StreamReader(PathToFiles + grammarFileName);
-                var grammar = await reader.ReadToEndAsync();
+                var grammar = reader.ReadToEnd();
                 
                 _grammar = DSLCompiler.Compile(
                     new CompilerOptions()
@@ -55,8 +53,16 @@ namespace SpacerTransformationsAPI.Controllers
                             typeof(Node).GetTypeInfo().Assembly)
                     }
                 );
+        }
 
-                var rawLemmas = await DynamoDb.GetLemmas(instance);
+        [HttpPost]
+        public async Task<ActionResult> LearnTransformation([FromBody]LearnTransformRequestBody requestBody)
+        {
+            try
+            {
+                Console.WriteLine(requestBody.Instance);
+
+                var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
                 var lemmas = DynamoDb.GetChangedLemmas(rawLemmas);
                 ProgramSet learned;
                 using (var ctx = new Context())
@@ -77,7 +83,9 @@ namespace SpacerTransformationsAPI.Controllers
                         });
                     learned = _prose.LearnGrammarTopK(spec, scoreFeature);
                 }
-                return Ok(JsonConvert.SerializeObject(learned.RealizedPrograms.ToList()));
+
+                var finalPrograms = learned.RealizedPrograms.Select(program => program.ToString()).ToList();
+                return Ok(JsonConvert.SerializeObject(finalPrograms));
             }
             catch (Exception ex)
             {
@@ -87,33 +95,39 @@ namespace SpacerTransformationsAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> ApplyTransformation(string instance)
+        public async Task<ActionResult> ApplyTransformation(string instance, string program, List<string> declareStatements)
         {
-            
-                    Console.WriteLine("Possible Programs: " + learned);
-                    finalProgram = learned.RealizedPrograms.First();
-                    
-                    foreach (var kvp in lemmas.Lemmas)
-                    {
-                        if (kvp.Value.Raw != "")
-                        {
-                            var parsedSmtLib =
-                                SmtLib.StringToSmtLib(ctx, string.Format(SimpleBakeryPrefix, kvp.Value.Raw));
-                            if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
-                            {
-                                var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
-                                var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
-                                var result = (Node) finalProgram.Invoke(stateInput);
-                                var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
-                                lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
-                                lemmas.Lemmas[kvp.Key].Lhs = lhs;
-                            }
+            Console.WriteLine(instance);
+            Console.WriteLine(program);
+            Console.WriteLine(declareStatements);
+            var finalProgram = ProgramNode.Parse(program, _grammar.Value);
 
+            var rawLemmas = await DynamoDb.GetLemmas(instance);
+            var lemmas = DynamoDb.DbToSpacerInstance(rawLemmas);
+            using (var ctx = new Context())
+            {
+                foreach (var kvp in lemmas.Lemmas)
+                {
+                    if (kvp.Value.Raw != "")
+                    {
+                        var parsedSmtLib =
+                            SmtLib.StringToSmtLib(ctx, string.Format(SimpleBakeryPrefix, kvp.Value.Raw));
+                        if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
+                        {
+                            var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
+                            var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
+                            var result = (Node) finalProgram.Invoke(stateInput);
+                            var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
+                            lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
+                            lemmas.Lemmas[kvp.Key].Lhs = lhs;
                         }
+
                     }
-                    ctx.Dispose();
                 }
-                Console.WriteLine("Transformation complete");
+                ctx.Dispose();
+            }
+            Console.WriteLine("Transformation complete");
+            return Ok(JsonConvert.SerializeObject(lemmas.Lemmas));
         }
     }
 }
