@@ -84,7 +84,7 @@ namespace SpacerTransformationsAPI.Controllers
                     learned = _prose.LearnGrammarTopK(spec, scoreFeature);
                 }
 
-                var finalPrograms = learned.RealizedPrograms.Select(program => program.ToString()).ToList();
+                var finalPrograms = learned.RealizedPrograms.Select(program => new FinalProgram(program.ToString(), program.PrintAST())).ToList();
                 return Ok(JsonConvert.SerializeObject(finalPrograms));
             }
             catch (Exception ex)
@@ -94,40 +94,47 @@ namespace SpacerTransformationsAPI.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult> ApplyTransformation(string instance, string program, List<string> declareStatements)
+        [HttpPost]
+        public async Task<ActionResult> ApplyTransformation([FromBody]ApplyTransformRequestBody requestBody)
         {
-            Console.WriteLine(instance);
-            Console.WriteLine(program);
-            Console.WriteLine(declareStatements);
-            var finalProgram = ProgramNode.Parse(program, _grammar.Value);
-
-            var rawLemmas = await DynamoDb.GetLemmas(instance);
-            var lemmas = DynamoDb.DbToSpacerInstance(rawLemmas);
-            using (var ctx = new Context())
+            try
             {
-                foreach (var kvp in lemmas.Lemmas)
-                {
-                    if (kvp.Value.Raw != "")
-                    {
-                        var parsedSmtLib =
-                            SmtLib.StringToSmtLib(ctx, string.Format(SimpleBakeryPrefix, kvp.Value.Raw));
-                        if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
-                        {
-                            var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
-                            var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
-                            var result = (Node) finalProgram.Invoke(stateInput);
-                            var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
-                            lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
-                            lemmas.Lemmas[kvp.Key].Lhs = lhs;
-                        }
+                Console.WriteLine(requestBody.Instance);
+                Console.WriteLine(requestBody.Program);
+                var finalProgram = ProgramNode.Parse(requestBody.Program, _grammar.Value);
 
+                var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
+                var lemmas = DynamoDb.DbToSpacerInstance(rawLemmas);
+                using (var ctx = new Context())
+                {
+                    foreach (var kvp in lemmas.Lemmas)
+                    {
+                        if (kvp.Value.Raw != "")
+                        {
+                            var parsedSmtLib =
+                                SmtLib.StringToSmtLib(ctx, string.Format(SimpleBakeryPrefix, kvp.Value.Raw));
+                            if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
+                            {
+                                var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
+                                var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
+                                var result = (Node) finalProgram.Invoke(stateInput);
+                                var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
+                                lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
+                                lemmas.Lemmas[kvp.Key].Lhs = lhs;
+                            }
+
+                        }
                     }
+                    ctx.Dispose();
                 }
-                ctx.Dispose();
+                Console.WriteLine("Transformation complete");
+                return Ok(JsonConvert.SerializeObject(lemmas.Lemmas));
             }
-            Console.WriteLine("Transformation complete");
-            return Ok(JsonConvert.SerializeObject(lemmas.Lemmas));
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }
