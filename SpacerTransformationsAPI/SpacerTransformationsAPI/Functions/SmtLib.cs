@@ -10,6 +10,7 @@ namespace SpacerTransformationsAPI.Functions
             var fmls = ctx.ParseSMTLIB2String(raw);
             return fmls[0];
         }
+        
         /*
 
         public static void ParserExample1(Context ctx)
