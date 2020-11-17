@@ -71,13 +71,13 @@ namespace SpacerTransformationsAPI.Functions
             
         }
 
-        public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamples(Context ctx, IEnumerable<Lemma> lemmas, string prefix)
+        public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamples(Context ctx, IEnumerable<Lemma> lemmas, string prefix, string declareStatements)
         {
             var results = new List<Tuple<Node, Node>>();
              foreach (var lemma in lemmas)
              {
                  if (!lemma.Changed) continue;
-                 var input = SmtLib.StringToSmtLib(ctx, string.Format(prefix, lemma.Raw));
+                 var input = SmtLib.StringToSmtLib(ctx, string.Format(prefix, declareStatements, lemma.Raw));
                  var inputTree = Utils.HandleSmtLibParsed(input, ctx);
                  var outputTree = Semantics.Transform(inputTree, lemma.Lhs);
                  results.Add(new Tuple<Node, Node>(inputTree, outputTree));

@@ -12,8 +12,6 @@ using Microsoft.ProgramSynthesis.Diagnostics;
 using Microsoft.ProgramSynthesis.Learning;
 using Microsoft.ProgramSynthesis.Learning.Logging;
 using Microsoft.ProgramSynthesis.Learning.Strategies;
-using Microsoft.ProgramSynthesis.Transformation.Tree.Build.NodeTypes;
-using Microsoft.ProgramSynthesis.Utils.Interactive;
 using Microsoft.ProgramSynthesis.VersionSpace;
 using Microsoft.Z3;
 using Newtonsoft.Json;
@@ -28,11 +26,7 @@ namespace SpacerTransformationsAPI.Controllers
     public class TransformationsController : Controller
     {
         private const string PathToFiles = @"./";
-        private const string SimpleBakeryPrefix = "(declare-const State (Array Int Int)) " +
-                                                  "(declare-const Num (Array Int Int)) " +
-                                                  "(declare-const Issue Int) " +
-                                                  "(declare-const Serve Int) " +
-                                                  "(assert {0})";
+        private const string SmtPrefix = "{0} (assert {1})";
         private Result<Grammar> _grammar;
         private static SynthesisEngine _prose;
 
@@ -68,7 +62,7 @@ namespace SpacerTransformationsAPI.Controllers
                 using (var ctx = new Context())
                 {
                     var inputExamples = DynamoDb.GetInputOutputExamples(ctx, lemmas.Lemmas
-                        .Select(kvp => kvp.Value).ToList(), SimpleBakeryPrefix);
+                        .Select(kvp => kvp.Value).ToList(), SmtPrefix, requestBody.DeclareStatements);
                     var spec = Utils.CreateExampleSpec(_grammar, inputExamples);
                     RankingScore.ScoreForContext = 100;
                     var scoreFeature = new RankingScore(_grammar.Value);
@@ -112,7 +106,7 @@ namespace SpacerTransformationsAPI.Controllers
                         if (kvp.Value.Raw != "")
                         {
                             var parsedSmtLib =
-                                SmtLib.StringToSmtLib(ctx, string.Format(SimpleBakeryPrefix, kvp.Value.Raw));
+                                SmtLib.StringToSmtLib(ctx, string.Format(SmtPrefix, requestBody.DeclareStatements, kvp.Value.Raw));
                             if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
                             {
                                 var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
