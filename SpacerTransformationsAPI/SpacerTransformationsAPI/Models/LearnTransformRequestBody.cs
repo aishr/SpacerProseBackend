@@ -8,6 +8,6 @@ namespace SpacerTransformationsAPI.Models
         [JsonProperty(PropertyName = "instance")]
         public string Instance { get; set; }
         [JsonProperty(PropertyName = "declareStatements")]
-        public List<string> DeclareStatements { get; set; }
+        public string DeclareStatements { get; set; }
     }
 }
