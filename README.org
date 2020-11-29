@@ -23,7 +23,7 @@
    docker run -dit --network="host" --name ProseBackend aishr/spacer-prose-backend:latest
    
    pull the docker container (dev branch)
-   docker run -dit --network="host" --name ProseBackend aishr/spacer-prose-backend:latest
+   docker run -dit --network="host" --name ProseBackend aishr/spacer-prose-backend:develop
 ** To Make Change (under construction)
   - clone the repo
     git clone https://github.com/aishr/SpacerProseBackend.git
