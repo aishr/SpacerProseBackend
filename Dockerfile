@@ -6,5 +6,8 @@ RUN apt update && apt install -y vim  apt-transport-https dotnet-sdk-3.1
 
 COPY ./SpacerTransformationsAPI /SpacerProseBackend
 
+WORKDIR ./SpacerProseBackend/SpacerTransformationsAPI/
 #build dotnet stuff
-RUN cd /SpacerProseBackend/SpacerTransformationsAPI && dotnet build && dotnet run
+RUN dotnet build
+
+ENTRYPOINT dotnet run
