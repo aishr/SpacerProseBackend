@@ -1,84 +1,43 @@
-#+TITLE: Set up transformation part of visualizer
+* How to Run
+** Front end
+   [[https://nhamlv-55.github.io/spacer-visualization]]
 
-* Visualizer
-** For Use
-   go to https://nhamlv-55.github.io/spacer-visualization
-** To Make Changes
-  - clone visualizer repo
-    git clone https://github.com/nhamlv-55/spacer-visualization.git
-    git clone git@github.com:nhamlv-55/spacer-visualization.git
+** Backend
+   - copy the https://github.com/nhamlv-55/spacer-visualization/blob/master/docker-compose.yml to a local directory of your choosing
+   - run the following command to spin up both containers for the backend
+     =docker-compose up=
+   - [OPTIONAL] edit docker containers to pull develop version of containers instead of latest
 
-  - change to working directory
-    cd spacer-visualization/visualization-frontend
-
-  - install npm packages
-    npm install
-    
-  - run frontend
-    npm start
-
-* Prose Backend
-** To Use
-   pull the docker container (master branch)
-   docker run -dit --network="host" --name ProseBackend aishr/spacer-prose-backend:latest
+* Making Changes to the Visualizer
+ - clone visualizer repo
    
-   pull the docker container (dev branch)
-   docker run -dit --network="host" --name ProseBackend aishr/spacer-prose-backend:develop
-** To Make Change (under construction)
-  - clone the repo
-    git clone https://github.com/aishr/SpacerProseBackend.git
-    git clone git@github.com:aishr/SpacerProseBackend.git
-
-  - change to working directory
-    cd SpacerProseBackend/SpacerTransformationsAPI/SpacerTransformationsAPI/
-
-  - edit environment variables
-    change LD_LIBRARY_PATH under SpacerTransformationsAPIDev to point to your local version of z3
-    change TABLE_NAME to the same table name in the previous section (should be your name)
-
-  - run project
-    dotnet run
-
-* SpacerVisBackend (under construction)
-  - clone the repo
-    git clone https://github.com/aishr/SpacerVisBackend.git
-    git clone git@github.com:aishr/SpacerVisBackend.git
-
-** Scripted
-   - change to working directory
-     cd SpacerVisBackend
+   =git clone https://github.com/nhamlv-55/spacer-visualization.git=
    
-  - get env variables and place in SpacerVisBackend/pobvis/app/
-    https://github.com/aishr/SpacerProseBackend/blob/master/envVars/.env
+   =git clone git@github.com:nhamlv-55/spacer-visualization.git=
 
-   - run startBackend.sh
-     ./startBackend.sh
-     
-** Manual
-  - change to working directory for pip packages
-    cd SpacerVisBackend/pobvis/
+ - change to working directory
+   
+   =cd spacer-visualization/visualization-frontend=
+   dd
 
-  - get the docker container
-    docker run -dit --network="host" -p 5000:5000 --name SpacerBackend levn/spacer_backend:latest
+ - install npm packages
+   
+   =npm install=
+   
+ - run frontend
+   
+   =npm start=
 
-  - copy in requirements.txt
-    docker cp requirements.txt SpacerBackend:/SpacerBackend/pobvis/requirements.txt
-
-  - install requirements
-    docker exec -it SpacerBackend bash -c "pip3 install -r /SpacerBackend/pobvis/requirements.txt"
-
-  - change to working directory
-    cd app/
-
-  - get env variables
-    https://github.com/aishr/SpacerProseBackend/blob/master/envVars/.env
-
-  - copy the relevant files
-    docker cp main.py SpacerBackend:/SpacerBackend/pobvis/app/main.py
-    docker cp .env SpacerBackend:/SpacerBackend/pobvis/app/.env
-    docker cp utils/utils.py SpacerBackend:/SpacerBackend/pobvis/app/utils/utils.py
-
-  - run the container
-    docker exec -it SpacerBackend bash -c "python3 main.py -z3 /SpacerBackend/z3s/NhamZ3/build/z3"
-
+* Making Changes to the Backend
+  - clone both repos
     
+    =git clone https://github.com/aishr/SpacerVisBackend.git=
+    
+    =git clone https://github.com/aishr/SpacerProseBackend.git=
+  - edit one of the docker-compose.yml so =build:= points to the directories of each of the backends
+  - run =docker-compose up= in the same directory as your edited =docker-compose.yml=
+
+    =docker-compose up=
+  - Note: run the following after you've made changes
+
+    =docker-compose up --build=
