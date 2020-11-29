@@ -1,12 +1,12 @@
 #+TITLE: Set up transformation part of visualizer
 
 * Visualizer
+** For Use
+   go to https://nhamlv-55.github.io/spacer-visualization
+** To Make Changes
   - clone visualizer repo
     git clone https://github.com/nhamlv-55/spacer-visualization.git
     git clone git@github.com:nhamlv-55/spacer-visualization.git
-
-  - [OPTIONAL] for beta version
-    git checkout flash-fill
 
   - change to working directory
     cd spacer-visualization/visualization-frontend
@@ -17,8 +17,29 @@
   - run frontend
     npm start
 
+* Prose Backend
+** To Use
+   pull the docker container (master branch)
+   docker run -dit --network="host" --name ProseBackend aishr/spacer-prose-backend:latest
+   
+   pull the docker container (dev branch)
+   docker run -dit --network="host" --name ProseBackend aishr/spacer-prose-backend:latest
+** To Make Change (under construction)
+  - clone the repo
+    git clone https://github.com/aishr/SpacerProseBackend.git
+    git clone git@github.com:aishr/SpacerProseBackend.git
 
-* SpacerVisBackend
+  - change to working directory
+    cd SpacerProseBackend/SpacerTransformationsAPI/SpacerTransformationsAPI/
+
+  - edit environment variables
+    change LD_LIBRARY_PATH under SpacerTransformationsAPIDev to point to your local version of z3
+    change TABLE_NAME to the same table name in the previous section (should be your name)
+
+  - run project
+    dotnet run
+
+* SpacerVisBackend (under construction)
   - clone the repo
     git clone https://github.com/aishr/SpacerVisBackend.git
     git clone git@github.com:aishr/SpacerVisBackend.git
@@ -60,18 +81,4 @@
   - run the container
     docker exec -it SpacerBackend bash -c "python3 main.py -z3 /SpacerBackend/z3s/NhamZ3/build/z3"
 
-* Prose Backend
-  - clone the repo
-    git clone https://github.com/aishr/SpacerProseBackend.git
-    git clone git@github.com:aishr/SpacerProseBackend.git
-
-  - change to working directory
-    cd SpacerProseBackend/SpacerTransformationsAPI/SpacerTransformationsAPI/
-
-  - edit environment variables
-    change LD_LIBRARY_PATH under SpacerTransformationsAPIDev to point to your local version of z3
-    change TABLE_NAME to the same table name in the previous section (should be your name)
-
-  - run project
-    dotnet run
     
