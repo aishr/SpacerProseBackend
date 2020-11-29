@@ -11,14 +11,11 @@
 * Making Changes to the Visualizer
  - clone visualizer repo
    
-   =git clone https://github.com/nhamlv-55/spacer-visualization.git=
-   
    =git clone git@github.com:nhamlv-55/spacer-visualization.git=
 
  - change to working directory
    
    =cd spacer-visualization/visualization-frontend=
-   dd
 
  - install npm packages
    
