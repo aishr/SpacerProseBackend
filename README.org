@@ -10,21 +10,34 @@
 
 * Making Changes to the Visualizer
  - clone visualizer repo
+   
    =git clone https://github.com/nhamlv-55/spacer-visualization.git=
+   
    =git clone git@github.com:nhamlv-55/spacer-visualization.git=
 
  - change to working directory
+   
    =cd spacer-visualization/visualization-frontend=
+   dd
 
  - install npm packages
+   
    =npm install=
    
  - run frontend
+   
    =npm start=
 
 * Making Changes to the Backend
   - clone both repos
+    
     =git clone https://github.com/aishr/SpacerVisBackend.git=
+    
     =git clone https://github.com/aishr/SpacerProseBackend.git=
   - edit one of the docker-compose.yml so =build:= points to the directories of each of the backends
   - run =docker-compose up= in the same directory as your edited =docker-compose.yml=
+
+    =docker-compose up=
+  - Note: run the following after you've made changes
+
+    =docker-compose up --build=
