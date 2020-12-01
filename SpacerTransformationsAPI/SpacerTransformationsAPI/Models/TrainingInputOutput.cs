@@ -5,7 +5,8 @@ namespace SpacerTransformationsAPI.Models
 {
     public class TrainingInputOutput
     {
-        [JsonProperty(PropertyName = "input")] public string Input { get; set; }
+        [JsonProperty(PropertyName = "input")] 
+        public string Input { get; set; }
 
         [JsonProperty(PropertyName = "output")]
         public string Output { get; set; }
