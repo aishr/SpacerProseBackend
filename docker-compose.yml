@@ -1,8 +1,12 @@
 version: "3.8"
 services:
   SpacerVisBackend:
-    image: aishr/spacer-vis-backend:latest 
-    network_mode: "host"
+    build: ~/visualizer/SpacerVisBackend/
+    image: spacervisbackend
+    ports: 
+      - 5000:5000
   SpacerProseBackend:
-    image: aishr/spacer-prose-backend:latest
-    network_mode: "host"
+    build: ~/visualizer/SpacerProseBackend/
+    image: spacerprosebackend
+    ports: 
+      - 2000:2000
