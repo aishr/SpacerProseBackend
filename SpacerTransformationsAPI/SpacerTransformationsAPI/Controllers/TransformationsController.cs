@@ -78,6 +78,9 @@ namespace SpacerTransformationsAPI.Controllers
                 }
 
                 var finalPrograms = learned.RealizedPrograms.Select(program => new FinalProgram(program.ToString(), program.PrintAST())).ToList();
+                if (finalPrograms.Count == 0) {
+                    Console.WriteLine("No Programs Found");
+                }
                 return Ok(JsonConvert.SerializeObject(finalPrograms));
             }
             catch (Exception ex)
