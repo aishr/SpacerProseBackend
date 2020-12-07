@@ -18,8 +18,7 @@
  - change to working directory
    
    =cd spacer-visualization/visualization-frontend=
-   dd
-
+   
  - install npm packages
    
    =npm install=
