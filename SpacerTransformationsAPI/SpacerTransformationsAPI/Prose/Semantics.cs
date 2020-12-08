@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ProgramSynthesis.Split.Text.Build.RuleNodeTypes;
+using Microsoft.ProgramSynthesis.Transformation.Text.Build.NodeTypes;
 using Microsoft.Z3;
 using SpacerTransformationsAPI.Functions;
 using SpacerTransformationsAPI.Models;
@@ -85,6 +87,21 @@ namespace SpacerTransformationsAPI.Prose
 
             return result;
         }
-        
+
+        public static IEnumerable<int> FilterByNot(Node inputTree)
+        {
+            var result = new List<int>();
+            var children = inputTree.Children;
+
+            for (var i = 0; i < children.Count; i++)
+            {
+                if (children[i].IsNot())
+                {
+                    result.Add(i);
+                }
+            }
+
+            return result;
+        }
     }
 }

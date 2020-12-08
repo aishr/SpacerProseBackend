@@ -95,6 +95,11 @@ namespace SpacerTransformationsAPI.Models
             }
             return result || Expr.ToString() == id;
         }
+
+        public bool IsNot()
+        {
+            return Expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_NOT;
+        }
         
         public IList<Expr> FlattenTree()
         {
