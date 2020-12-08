@@ -62,6 +62,7 @@ namespace SpacerTransformationsAPI.Controllers
                 {
                     var inputExamples = DynamoDb.GetInputOutputExamplesModified(ctx, requestBody.InputOutputExamples,
                         SmtPrefix, requestBody.DeclareStatements);
+                    Console.WriteLine("Debug: pulled from dynamodb");
                     var spec = Utils.CreateExampleSpec(_grammar, inputExamples);
                     RankingScore.ScoreForContext = 100;
                     var scoreFeature = new RankingScore(_grammar.Value);
@@ -95,6 +96,7 @@ namespace SpacerTransformationsAPI.Controllers
                 Console.WriteLine(requestBody.Instance);
 
                 var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
+                Console.WriteLine("Debug: pulled from dynamodb");
                 var lemmas = DynamoDb.GetChangedLemmas(rawLemmas);
                 ProgramSet learned;
                 using (var ctx = new Context())

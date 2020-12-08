@@ -15,8 +15,8 @@ namespace SpacerTransformationsAPI.Functions
     public static class DynamoDb
     {
         private static readonly AmazonDynamoDBClient Client = new AmazonDynamoDBClient(
-            new BasicAWSCredentials(Environment.GetEnvironmentVariable("ACCESS_KEY"),
-                Environment.GetEnvironmentVariable("SECRET_KEY")), 
+            new BasicAWSCredentials(Environment.GetEnvironmentVariable("ACCESS_KEY_ID"),
+                Environment.GetEnvironmentVariable("SECRET_ACCESS_KEY")), 
             RegionEndpoint.USEast2);
         
         public static async Task<GetItemResponse> GetLemmas(string id)
