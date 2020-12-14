@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ProgramSynthesis;
@@ -99,6 +100,141 @@ namespace SpacerTransformationsAPI.Prose
             return new DisjunctiveExamplesSpec(examples);
         }
         
+        //Node Move(Node inputTree, Tuple<int, bool> positionLeft)
+        [WitnessFunction("Move", 1)]
+        public ExampleSpec WitnessMovePosition(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (Node)spec.Examples[input];
+                for (var i = 0; i < after.Children.Count; ++i)
+                {
+                    if (Semantics.Move(before, new Tuple<int, bool>(i, true)).IsEqualTo(after))
+                    {
+                        examples[input] = new Tuple<int, bool>(i, true);
+                    }
+                    if (Semantics.Move(before, new Tuple<int, bool>(i, false)).IsEqualTo(after))
+                    {
+                        examples[input] = new Tuple<int, bool>(i, false);
+                    }
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+
+        //string IndexByName(Node inputTree, string name)
+        [WitnessFunction("IndexByName", 1)]
+        public ExampleSpec WitnessIndexByName(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (string)spec.Examples[input];
+                var children = before.GetIdentifiers();
+
+                foreach (var child in children)
+                {
+                    if (Semantics.IndexByName(before, child) == after)
+                    {
+                        examples[input] = child;
+                    }
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+
+        //string IndexFromFront(Node inputTree, string index)
+        [WitnessFunction("IndexFromFront", 1)]
+        public ExampleSpec WitnessIndexByIndex(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (string)spec.Examples[input];
+
+                for (var i = 0; i < before.Children.Count; ++i)
+                {
+                    if(Semantics.IndexFromFront(before, i.ToString()) == after)
+                    {
+                        examples[input] = i.ToString();
+                    }
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+
+        //string IndexFromBack(Node inputTree, string index)
+        [WitnessFunction("IndexFromBack", 1)]
+        public ExampleSpec WitnessIndexLast(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (string)spec.Examples[input];
+
+                for (var i = 0; i < before.Children.Count; ++i)
+                {
+                    if (Semantics.IndexFromBack(before, i.ToString()) == after)
+                    {
+                        examples[input] = i.ToString();
+                    }
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+
+        //Tuple<int, bool> MakeMoveLeft(Node inputTree, string position)
+        [WitnessFunction("MakeMoveLeft", 1)]
+        public ExampleSpec MakeMoveLeft(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (Tuple<int, bool>)spec.Examples[input];
+
+                for (var i = 0; i < before.Children.Count; ++i)
+                {
+                    if (Semantics.MakeMoveLeft(before, i.ToString()).Equals(after))
+                    {
+                        examples[input] = i.ToString();
+                    }
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+
+        //Tuple<int, bool> MakeMoveRight(Node inputTree, string position)
+        [WitnessFunction("MakeMoveRight", 1)]
+        public ExampleSpec MakeMoveRight(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (Tuple<int, bool>)spec.Examples[input];
+
+                for (var i = 0; i < before.Children.Count; ++i)
+                {
+                    if (Semantics.MakeMoveRight(before, i.ToString()).Equals(after))
+                    {
+                        examples[input] = i.ToString();
+                    }
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
 
     }
 }

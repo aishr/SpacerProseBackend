@@ -153,9 +153,13 @@ namespace SpacerTransformationsAPI.Controllers
                                 var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
                                 var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
                                 var result = (Node) finalProgram.Invoke(stateInput);
-                                var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
-                                lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
-                                lemmas.Lemmas[kvp.Key].Lhs = lhs;
+
+                                if (finalProgram.ToString().Contains("Transform"))
+                                {
+                                    var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
+                                    lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
+                                    lemmas.Lemmas[kvp.Key].Lhs = lhs;
+                                }
                             }
 
                         }
