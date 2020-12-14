@@ -30,5 +30,26 @@ namespace SpacerTransformationsAPI.Prose
         
         [FeatureCalculator("process", Method = CalculationMethod.FromLiteral)]
         public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 2;
+        
+        [FeatureCalculator("Move")]
+        public static double Score_Move(double inputTree, double name) => name;
+
+        [FeatureCalculator("IndexByName")]
+        public static double Score_IndexByName(double inputTree, double name) => name;
+
+        [FeatureCalculator("IndexFromFront")]
+        public static double Score_IndexFromFront(double inputTree, double index) => index;
+
+        [FeatureCalculator("IndexFromBack")]
+        public static double Score_IndexFromBack(double inputTree, double index) => index;
+
+        [FeatureCalculator("MakeMoveLeft")]
+        public static double Score_MakeMoveLeft(double inputTree, double position) => position;
+
+        [FeatureCalculator("MakeMoveRight")]
+        public static double Score_MakeMoveRight(double inputTree, double position) => position;
+
+        [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
+        public static double Score_Index(string type) => (type.Equals("any")) ? 1 : 2;
     }
 }
