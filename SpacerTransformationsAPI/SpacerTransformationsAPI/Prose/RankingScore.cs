@@ -26,10 +26,10 @@ namespace SpacerTransformationsAPI.Prose
         public static double Score_FilterByNot(double inputTree) => 2;
         
         [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
-        public static double NameScore(string type) => (type.Equals("any")) ? 1 : 2;
+        public static double NameScore(string type) => (type.Equals("any")) ? 1 : 3;
         
         [FeatureCalculator("process", Method = CalculationMethod.FromLiteral)]
-        public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 2;
+        public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 3;
         
         [FeatureCalculator("Move")]
         public static double Score_Move(double inputTree, double name) => name;
@@ -50,6 +50,6 @@ namespace SpacerTransformationsAPI.Prose
         public static double Score_MakeMoveRight(double inputTree, double position) => position;
 
         [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
-        public static double Score_Index(string type) => (type.Equals("any")) ? 1 : 2;
+        public static double Score_Index(string type) => (type.Equals("any")) ? 1 : 3;
     }
 }
