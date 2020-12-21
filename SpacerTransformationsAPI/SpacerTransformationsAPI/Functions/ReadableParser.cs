@@ -6,7 +6,7 @@ namespace SpacerTransformationsAPI.Functions
     public static class ReadableParser
     {
         //Assume lst is array of strings and sep is string
-        public static string ParseResult(Expr expr, bool addFalse)
+        public static string ParseResult(Expr expr, bool addFalse = false)
         {
             var result = "";
             //Replaces lines 16-19 of readable.ts

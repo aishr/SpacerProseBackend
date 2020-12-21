@@ -36,10 +36,9 @@ namespace SpacerTransformationsAPI.Functions
             foreach (var lemmaNum in response.Item)
             {
                 if (lemmaNum.Key == "Id") continue;
-                var potentialList = lemmaNum.Value.M["lhs"].L;
                 if (lemmaNum.Value.M["changed"].BOOL)
                 {
-                    results.Lemmas.Add(int.Parse(lemmaNum.Key), CreateLemma(lemmaNum.Value, potentialList));
+                    results.Lemmas.Add(int.Parse(lemmaNum.Key), CreateLemma(lemmaNum.Value));
                 }
             }
 
@@ -52,25 +51,22 @@ namespace SpacerTransformationsAPI.Functions
             foreach (var lemmaNum in response.Item)
             {
                 if (lemmaNum.Key == "Id") continue;
-                var potentialList = lemmaNum.Value.M["lhs"].L;
-                results.Lemmas.Add(int.Parse(lemmaNum.Key), CreateLemma(lemmaNum.Value, potentialList));
+                results.Lemmas.Add(int.Parse(lemmaNum.Key), CreateLemma(lemmaNum.Value));
             }
             return results;
         }
 
-        private static Lemma CreateLemma(AttributeValue itemValue, List<AttributeValue> potentialList)
+        private static Lemma CreateLemma(AttributeValue itemValue)
         {
             return new Lemma() 
             {
-                 Edited = itemValue.M["edited"].S,
                  Readable = itemValue.M["readable"].S,
                  Raw = itemValue.M["raw"].S,
-                 Lhs = potentialList.Count == 0 ? new List<int>() : potentialList.Select(x => int.Parse(x.N)).ToList(),
-                 Changed = itemValue.M["changed"].BOOL
             };
             
         }
 
+        /*
         public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamples(Context ctx, IEnumerable<Lemma> lemmas, string prefix, string declareStatements)
         {
             var results = new List<Tuple<Node, Node>>();
@@ -85,6 +81,7 @@ namespace SpacerTransformationsAPI.Functions
 
              return results;
         }
+        */
 
         public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamplesModified(Context ctx,
             List<TrainingInputOutput> trainingExamples, string prefix, string declareStatements)

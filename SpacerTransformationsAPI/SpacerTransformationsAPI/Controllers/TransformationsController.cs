@@ -85,11 +85,14 @@ namespace SpacerTransformationsAPI.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.TargetSite);
                 Console.WriteLine("Error: " + ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
 
+        /*
         [HttpPost]
         public async Task<ActionResult> LearnTransformation([FromBody]LearnTransformRequestBody requestBody)
         {
@@ -128,6 +131,7 @@ namespace SpacerTransformationsAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        */
 
         [HttpPost]
         public async Task<ActionResult> ApplyTransformation([FromBody]ApplyTransformRequestBody requestBody)
@@ -154,12 +158,8 @@ namespace SpacerTransformationsAPI.Controllers
                                 var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
                                 var result = (Node) finalProgram.Invoke(stateInput);
 
-                                if (finalProgram.ToString().Contains("Transform"))
-                                {
-                                    var lhs = (List<int>) finalProgram.Children[1].Invoke(stateInput);
-                                    lemmas.Lemmas[kvp.Key].Edited = ReadableParser.ParseResult(result.Expr, lhs.Count == input.Children.Count);
-                                    lemmas.Lemmas[kvp.Key].Lhs = lhs;
-                                }
+                                lemmas.Lemmas[kvp.Key].Raw = result.Expr.ToString();
+                                lemmas.Lemmas[kvp.Key].Readable = ReadableParser.ParseResult(result.Expr);
                             }
 
                         }
@@ -171,6 +171,8 @@ namespace SpacerTransformationsAPI.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.TargetSite);
                 Console.WriteLine("Error: " + ex.Message);
                 return StatusCode(500, ex.Message);
             }
