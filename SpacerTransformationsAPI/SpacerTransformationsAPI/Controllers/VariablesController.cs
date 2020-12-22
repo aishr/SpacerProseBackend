@@ -1,4 +1,10 @@
+using System;
+using System.Threading.Tasks;
+using Amazon.DynamoDBv2.Model.Internal.MarshallTransformations;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using SpacerTransformationsAPI.Functions;
+using SpacerTransformationsAPI.Models;
 
 namespace SpacerTransformationsAPI.Controllers
 {
@@ -7,9 +13,34 @@ namespace SpacerTransformationsAPI.Controllers
     public class VariablesController: Controller
     {
         [HttpPost]
-        public ActionResult Replace()
+        public async Task<ActionResult> Replace([FromBody]ReplaceRequestBody requestBody)
         {
-            return Ok();
+            
+            try
+            {
+                Console.WriteLine(requestBody.Instance);
+
+                var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
+                var lemmas = DynamoDb.DbToSpacerInstance(rawLemmas);
+                foreach (var kvp in lemmas.Lemmas)
+                {
+                    foreach (var io in requestBody.Params)
+                    {
+                        if (lemmas.Lemmas[kvp.Key].Readable == null) continue;
+                        lemmas.Lemmas[kvp.Key].Raw = lemmas.Lemmas[kvp.Key].Raw.Replace(io.Source, io.Target);
+                        lemmas.Lemmas[kvp.Key].Readable = lemmas.Lemmas[kvp.Key].Readable.Replace(io.Source, io.Target);
+                    }
+                }
+                Console.WriteLine("Transformation complete");
+                return Ok(JsonConvert.SerializeObject(lemmas.Lemmas));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.TargetSite);
+                Console.WriteLine("Error: " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }

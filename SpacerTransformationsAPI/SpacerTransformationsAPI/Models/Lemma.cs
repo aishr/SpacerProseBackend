@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace SpacerTransformationsAPI.Models
 {
     public class Lemma

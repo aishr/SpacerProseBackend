@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Z3;
 
 namespace SpacerTransformationsAPI.Functions
