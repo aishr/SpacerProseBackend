@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.ProgramSynthesis.Split.Text.Build.RuleNodeTypes;
-using Microsoft.ProgramSynthesis.Transformation.Text.Build.NodeTypes;
 using Microsoft.Z3;
 using SpacerTransformationsAPI.Functions;
 using SpacerTransformationsAPI.Models;

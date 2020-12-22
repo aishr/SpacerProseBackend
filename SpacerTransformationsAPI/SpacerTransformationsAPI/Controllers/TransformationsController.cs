@@ -91,48 +91,7 @@ namespace SpacerTransformationsAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
-        /*
-        [HttpPost]
-        public async Task<ActionResult> LearnTransformation([FromBody]LearnTransformRequestBody requestBody)
-        {
-            try
-            {
-                Console.WriteLine(requestBody.Instance);
-
-                var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
-                var lemmas = DynamoDb.GetChangedLemmas(rawLemmas);
-                ProgramSet learned;
-                using (var ctx = new Context())
-                {
-                    var inputExamples = DynamoDb.GetInputOutputExamples(ctx, lemmas.Lemmas
-                        .Select(kvp => kvp.Value).ToList(), SmtPrefix, requestBody.DeclareStatements);
-                    var spec = Utils.CreateExampleSpec(_grammar, inputExamples);
-                    RankingScore.ScoreForContext = 100;
-                    var scoreFeature = new RankingScore(_grammar.Value);
-                    DomainLearningLogic learningLogic = new WitnessFunctions(_grammar.Value);
-                    _prose = new SynthesisEngine(_grammar.Value,
-                        new SynthesisEngine.Config
-                        {
-                            LogListener = new LogListener(),
-                            Strategies = new ISynthesisStrategy[] {new DeductiveSynthesis(learningLogic)},
-                            UseThreads = false,
-                            CacheSize = int.MaxValue
-                        });
-                    learned = _prose.LearnGrammarTopK(spec, scoreFeature);
-                }
-
-                var finalPrograms = learned.RealizedPrograms.Select(program => new FinalProgram(program.ToString(), program.PrintAST())).ToList();
-                return Ok(JsonConvert.SerializeObject(finalPrograms));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }
-        */
-
+        
         [HttpPost]
         public async Task<ActionResult> ApplyTransformation([FromBody]ApplyTransformRequestBody requestBody)
         {
@@ -177,5 +136,47 @@ namespace SpacerTransformationsAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        /*
+        [HttpPost]
+        public async Task<ActionResult> LearnTransformation([FromBody]LearnTransformRequestBody requestBody)
+        {
+            try
+            {
+                Console.WriteLine(requestBody.Instance);
+
+                var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
+                var lemmas = DynamoDb.GetChangedLemmas(rawLemmas);
+                ProgramSet learned;
+                using (var ctx = new Context())
+                {
+                    var inputExamples = DynamoDb.GetInputOutputExamples(ctx, lemmas.Lemmas
+                        .Select(kvp => kvp.Value).ToList(), SmtPrefix, requestBody.DeclareStatements);
+                    var spec = Utils.CreateExampleSpec(_grammar, inputExamples);
+                    RankingScore.ScoreForContext = 100;
+                    var scoreFeature = new RankingScore(_grammar.Value);
+                    DomainLearningLogic learningLogic = new WitnessFunctions(_grammar.Value);
+                    _prose = new SynthesisEngine(_grammar.Value,
+                        new SynthesisEngine.Config
+                        {
+                            LogListener = new LogListener(),
+                            Strategies = new ISynthesisStrategy[] {new DeductiveSynthesis(learningLogic)},
+                            UseThreads = false,
+                            CacheSize = int.MaxValue
+                        });
+                    learned = _prose.LearnGrammarTopK(spec, scoreFeature);
+                }
+
+                var finalPrograms = learned.RealizedPrograms.Select(program => new FinalProgram(program.ToString(), program.PrintAST())).ToList();
+                return Ok(JsonConvert.SerializeObject(finalPrograms));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+        */
+
     }
 }

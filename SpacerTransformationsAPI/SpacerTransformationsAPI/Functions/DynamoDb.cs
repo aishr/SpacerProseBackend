@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.DynamoDBv2;
@@ -8,7 +7,6 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 using Microsoft.Z3;
 using SpacerTransformationsAPI.Models;
-using SpacerTransformationsAPI.Prose;
 
 namespace SpacerTransformationsAPI.Functions
 {
