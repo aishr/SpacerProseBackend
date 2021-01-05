@@ -17,13 +17,13 @@ namespace SpacerTransformationsAPI.Prose
         public static double Score_Filter(double inputTree, double name) => name;
         
         [FeatureCalculator("FilterAllButLast")]
-        public static double Score_FilterAllButLast(double inputTree) => 2;
+        public static double Score_FilterAllButLast(double inputTree, double temp) => temp;
         
         [FeatureCalculator("FilterByProcess")]
         public static double Score_FilterByProcess(double inputTree, double process) => process;
         
         [FeatureCalculator("FilterByNot")]
-        public static double Score_FilterByNot(double inputTree) => 2;
+        public static double Score_FilterByNot(double inputTree, double temp) => temp;
         
         [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
         public static double NameScore(string type) => (type.Equals("any")) ? 1 : 3;
@@ -51,5 +51,8 @@ namespace SpacerTransformationsAPI.Prose
 
         [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
         public static double Score_Index(string type) => (type.Equals("any")) ? 1 : 3;
+        
+        [FeatureCalculator("temp", Method = CalculationMethod.FromLiteral)]
+        public static double TempScore(string type) => (type.Equals("any")) ? 1 : 3;
     }
 }

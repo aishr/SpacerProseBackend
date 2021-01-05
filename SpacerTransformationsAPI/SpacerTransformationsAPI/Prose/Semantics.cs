@@ -11,6 +11,11 @@ namespace SpacerTransformationsAPI.Prose
     {
         public static Node Transform(Node inputTree, List<int> leftSide)
         {
+            if (inputTree.Expr.FuncDecl.DeclKind != Z3_decl_kind.Z3_OP_OR)
+            {
+                return inputTree;
+            }
+            
             var ctx = inputTree.Ctx;
             var children = inputTree.Children;
             var leftSideNodes = new List<BoolExpr>();
@@ -57,7 +62,7 @@ namespace SpacerTransformationsAPI.Prose
             return result;
         }
 
-        public static IEnumerable<int> FilterAllButLast(Node inputTree)
+        public static IEnumerable<int> FilterAllButLast(Node inputTree, string temp)
         {
             var children = inputTree.Children;
             
@@ -87,7 +92,7 @@ namespace SpacerTransformationsAPI.Prose
             return result;
         }
 
-        public static IEnumerable<int> FilterByNot(Node inputTree)
+        public static IEnumerable<int> FilterByNot(Node inputTree, string temp)
         {
             var result = new List<int>();
             var children = inputTree.Children;
@@ -201,6 +206,101 @@ namespace SpacerTransformationsAPI.Prose
         public static Tuple<int, bool> MakeMoveRight(Node inputTree, string position)
         {
             return new Tuple<int, bool>(int.Parse(position), false);
+        }
+        
+        public static Node SquashNegation(Node inputTree, string temp)
+        {
+            if (!inputTree.IsNot())
+            {
+                return inputTree;
+            }
+
+            // !(!(a = b)) --> a = b
+            if(inputTree.Children[0].IsNot())
+            {
+                return inputTree.Children[0].Children[0];
+            }
+
+            // !(a > b) --> a <= b
+            // !(a < b) --> a >= b
+            else
+            {
+                var ctx = inputTree.Ctx;
+                var children = inputTree.Children[0].Children;
+                var op = inputTree.Children[0].Expr.FuncDecl.DeclKind;
+                var negatable = new List<Z3_decl_kind>()
+                {
+                    Z3_decl_kind.Z3_OP_LT,
+                    Z3_decl_kind.Z3_OP_GT,
+                    Z3_decl_kind.Z3_OP_LE,
+                    Z3_decl_kind.Z3_OP_GE,
+                };
+
+                if (!negatable.Contains(op))
+                {
+                    return inputTree;
+                }
+
+                Expr result = null;
+
+                switch (op)
+                {
+                    case Z3_decl_kind.Z3_OP_LT:
+                        result = ctx.MkGe((ArithExpr)children[0].Expr, (ArithExpr)children[1].Expr);
+                        break;
+                    case Z3_decl_kind.Z3_OP_GT:
+                        result = ctx.MkLe((ArithExpr)children[0].Expr, (ArithExpr)children[1].Expr);
+                        break;
+                    case Z3_decl_kind.Z3_OP_LE:
+                        result = ctx.MkGt((ArithExpr)children[0].Expr, (ArithExpr)children[1].Expr);
+                        break;
+                    case Z3_decl_kind.Z3_OP_GE:
+                        result = ctx.MkLt((ArithExpr)children[0].Expr, (ArithExpr)children[1].Expr);
+                        break;
+                }
+
+                return Utils.HandleSmtLibParsed(result, ctx);
+            }
+            
+        }
+
+        public static Node FlipComparison(Node inputTree, string temp)
+        {
+            var ctx = inputTree.Ctx;
+            var children = inputTree.Children;
+            var op = inputTree.Expr.FuncDecl.DeclKind;
+            var flippable = new List<Z3_decl_kind>()
+                    {
+                        Z3_decl_kind.Z3_OP_LT,
+                        Z3_decl_kind.Z3_OP_GT,
+                        Z3_decl_kind.Z3_OP_LE,
+                        Z3_decl_kind.Z3_OP_GE
+                    };
+
+            if (!flippable.Contains(op))
+            {
+                return inputTree;
+            }
+
+            Expr result = null;
+
+            switch (op)
+            {
+                case Z3_decl_kind.Z3_OP_LT:
+                    result = ctx.MkGt((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
+                    break;
+                case Z3_decl_kind.Z3_OP_GT:
+                    result = ctx.MkLt((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
+                    break;
+                case Z3_decl_kind.Z3_OP_LE:
+                    result = ctx.MkGe((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
+                    break;
+                case Z3_decl_kind.Z3_OP_GE:
+                    result = ctx.MkLe((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
+                    break;
+            }
+
+            return Utils.HandleSmtLibParsed(result, ctx);
         }
     }
 }

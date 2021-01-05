@@ -100,6 +100,47 @@ namespace SpacerTransformationsAPI.Prose
             return new DisjunctiveExamplesSpec(examples);
         }
         
+        
+        //IEnumerable<int> FilterAllButLast(Node inputTree, string temp)
+        [WitnessFunction("FilterAllButLast", 1)]
+        public ExampleSpec WitnessFilterAllButLast(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (List<int>)spec.Examples[input];
+
+                if (Semantics.FilterAllButLast(before, "temp").OrderBy(i => i)
+                    .SequenceEqual(after.OrderBy(i => i)))
+                {
+                    examples[input] = "temp";
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+
+        //IEnumerable<int> FilterByNot(Node inputTree, string temp)
+        [WitnessFunction("FilterByNot", 1)]
+        public ExampleSpec WitnessFilterByNot(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (List<int>)spec.Examples[input];
+
+                if (Semantics.FilterByNot(before, "temp").OrderBy(i => i)
+                    .SequenceEqual(after.OrderBy(i => i)))
+                {
+                    examples[input] = "temp";
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+        
         //Node Move(Node inputTree, Tuple<int, bool> positionLeft)
         [WitnessFunction("Move", 1)]
         public ExampleSpec WitnessMovePosition(GrammarRule rule, ExampleSpec spec)
@@ -236,5 +277,42 @@ namespace SpacerTransformationsAPI.Prose
             return new ExampleSpec(examples);
         }
 
+        //Node SquashNegation(Node inputTree, string temp)
+        [WitnessFunction("SquashNegation", 1)]
+        public ExampleSpec WitnessSquashNegation(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (Node)spec.Examples[input];
+
+                if(Semantics.SquashNegation(before, "temp").IsEqualTo(after))
+                {
+                    examples[input] = "temp";
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
+
+        //Node SquashNegation(Node inputTree, string temp)
+        [WitnessFunction("FlipComparison", 1)]
+        public ExampleSpec WitnessFlipComparison(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, object>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (Node)spec.Examples[input];
+
+                if (Semantics.FlipComparison(before, "temp").IsEqualTo(after))
+                {
+                    examples[input] = "temp";
+                }
+            }
+
+            return new ExampleSpec(examples);
+        }
     }
 }
