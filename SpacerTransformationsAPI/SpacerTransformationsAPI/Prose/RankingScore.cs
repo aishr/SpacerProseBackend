@@ -48,6 +48,12 @@ namespace SpacerTransformationsAPI.Prose
 
         [FeatureCalculator("MakeMoveRight")]
         public static double Score_MakeMoveRight(double inputTree, double position) => position;
+        
+        [FeatureCalculator("SquashNegation")]
+        public static double Score_SquashNegation(double inputTree, double temp) => temp;
+
+        [FeatureCalculator("FlipComparison")]
+        public static double Score_FlipComparison(double inputTree, double temp) => temp;
 
         [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
         public static double Score_Index(string type) => (type.Equals("any")) ? 1 : 3;

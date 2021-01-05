@@ -122,6 +122,7 @@ namespace SpacerTransformationsAPI.Prose
                 Z3_decl_kind.Z3_OP_AND,
                 Z3_decl_kind.Z3_OP_OR
             };
+            if (!movable.Contains(op)) return inputTree;
 
             if(movable.Contains(op) && positionLeft.Item1 >= 0)
             {
