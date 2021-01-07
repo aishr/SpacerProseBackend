@@ -9,8 +9,8 @@ language Transformations;
 
 @complete feature double Score = RankingScore;
 
-@start Node outputTree := Transform(inputTree, leftSide) | Move(inputTree, positionLeft) | SquashNegation(inputTree, temp) | FlipComparison(inputTree, temp);
-List<int> leftSide := Filter(inputTree, name) | FilterByProcess(inputTree, process) | FilterAllButLast(inputTree, temp) | FilterByNot(inputTree, temp);
+@start Node outputTree := ToImp(inputTree, leftSide) | Move(inputTree, positionLeft) | SquashNegation(inputTree, temp) | FlipComparison(inputTree, temp);
+List<int> leftSide := FilterByName(inputTree, name) | FilterByProcess(inputTree, process) | FilterAllButLast(inputTree, temp) | FilterByNot(inputTree, temp);
 Tuple<int, bool> positionLeft := MakeMoveLeft(inputTree, position) | MakeMoveRight(inputTree, position)
 string position := IndexByName(inputTree, name) | IndexFromFront(inputTree, index) | IndexFromBack(inputTree, index)
 

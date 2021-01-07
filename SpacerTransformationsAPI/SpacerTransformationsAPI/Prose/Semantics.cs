@@ -9,7 +9,7 @@ namespace SpacerTransformationsAPI.Prose
 {
     public static class Semantics
     {
-        public static Node Transform(Node inputTree, List<int> leftSide)
+        public static Node ToImp(Node inputTree, List<int> leftSide)
         {
             if (inputTree.Expr.FuncDecl.DeclKind != Z3_decl_kind.Z3_OP_OR)
             {
@@ -47,7 +47,7 @@ namespace SpacerTransformationsAPI.Prose
             var result = ctx.MkImplies(impliesLeftSide, impliesRightSide);
             return Utils.HandleSmtLibParsed(result, ctx);
         }
-        public static IEnumerable<int> Filter(Node inputTree, string name)
+        public static IEnumerable<int> FilterByName(Node inputTree, string name)
         {
             var result = new List<int>();
             var children = inputTree.Children;

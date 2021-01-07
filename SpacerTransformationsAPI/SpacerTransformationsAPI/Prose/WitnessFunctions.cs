@@ -34,7 +34,7 @@ namespace SpacerTransformationsAPI.Prose
                 foreach (var sub in possibleLists)
                 {
                     var subList = sub.ToList();
-                    if (Semantics.Transform(before, subList).IsEqualTo(after))
+                    if (Semantics.ToImp(before, subList).IsEqualTo(after))
                     {
                         examples[input] = subList;
                     }
@@ -57,7 +57,7 @@ namespace SpacerTransformationsAPI.Prose
                 var children = before.GetIdentifiers();
                 foreach (var child in children)
                 {
-                    if (Semantics.Filter(before, child).OrderBy(i => i)
+                    if (Semantics.FilterByName(before, child).OrderBy(i => i)
                         .SequenceEqual(after.OrderBy(i => i)))
                     {
                         if (!examples.ContainsKey(input))
