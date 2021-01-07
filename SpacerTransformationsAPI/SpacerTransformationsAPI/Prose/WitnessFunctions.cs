@@ -19,7 +19,7 @@ namespace SpacerTransformationsAPI.Prose
         //Given inputTree, I and outputTree, O, WitnessLeftSide(I, O) = R
         //where for every r in R, Transform2(I, r) = O
         // [a, b, c] -> [a], [b], [c], [a,b], [a,c], [a,b,c]
-        [WitnessFunction("Transform", 1)]
+        [WitnessFunction("ToImp", 1)]
         public ExampleSpec WitnessLeftSide(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, object>();
@@ -46,8 +46,8 @@ namespace SpacerTransformationsAPI.Prose
         
         
         //List<int> Filter(Node inputTree, string name)
-        [WitnessFunction("Filter", 1)]
-        public DisjunctiveExamplesSpec WitnessName3(GrammarRule rule, ExampleSpec spec)
+        [WitnessFunction("FilterByName", 1)]
+        public DisjunctiveExamplesSpec WitnessName(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
