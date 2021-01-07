@@ -62,13 +62,32 @@ namespace SpacerTransformationsAPI.Prose
             return result;
         }
 
-        public static IEnumerable<int> FilterAllButLast(Node inputTree, string temp)
+        public static IEnumerable<int> FilterStatic(Node inputTree, StaticFilterType type)
         {
             var children = inputTree.Children;
-            
-            return Enumerable.Range(0, children.Count - 1).ToList();
+
+            switch (type)
+            {
+                case StaticFilterType.Not:
+                    var result = new List<int>();
+
+                    for (var i = 0; i < children.Count; i++)
+                    {
+                        if (children[i].IsNot())
+                        {
+                            result.Add(i);
+                        }
+                    }
+
+                    return result;
+                    break;
+                case StaticFilterType.AllButLast:
+                    return Enumerable.Range(0, children.Count - 1).ToList();
+                default:
+                    return null;
+            }
         }
-        
+
         public static IEnumerable<int> FilterByProcess(Node inputTree, string process)
         {
             var result = new List<int>();
@@ -92,22 +111,6 @@ namespace SpacerTransformationsAPI.Prose
             return result;
         }
 
-        public static IEnumerable<int> FilterByNot(Node inputTree, string temp)
-        {
-            var result = new List<int>();
-            var children = inputTree.Children;
-
-            for (var i = 0; i < children.Count; i++)
-            {
-                if (children[i].IsNot())
-                {
-                    result.Add(i);
-                }
-            }
-
-            return result;
-        }
-        
         public static Node Move(Node inputTree, Tuple<int, bool> positionLeft)
         {
             var ctx = inputTree.Ctx;

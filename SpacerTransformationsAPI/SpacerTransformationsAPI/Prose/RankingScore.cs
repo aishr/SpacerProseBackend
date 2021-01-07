@@ -1,6 +1,7 @@
 using Microsoft.ProgramSynthesis;
 using Microsoft.ProgramSynthesis.AST;
 using Microsoft.ProgramSynthesis.Features;
+using SpacerTransformationsAPI.Models;
 
 namespace SpacerTransformationsAPI.Prose
 {
@@ -16,20 +17,20 @@ namespace SpacerTransformationsAPI.Prose
         [FeatureCalculator("FilterByName")]
         public static double Score_Filter(double inputTree, double name) => name;
         
-        [FeatureCalculator("FilterAllButLast")]
-        public static double Score_FilterAllButLast(double inputTree, double temp) => temp;
+        [FeatureCalculator("FilterStatic")]
+        public static double Score_FilterStatic(double inputTree, double type) => type;
         
         [FeatureCalculator("FilterByProcess")]
         public static double Score_FilterByProcess(double inputTree, double process) => process;
-        
-        [FeatureCalculator("FilterByNot")]
-        public static double Score_FilterByNot(double inputTree, double temp) => temp;
         
         [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
         public static double NameScore(string type) => (type.Equals("any")) ? 1 : 3;
         
         [FeatureCalculator("process", Method = CalculationMethod.FromLiteral)]
         public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 3;
+        
+        [FeatureCalculator("type", Method = CalculationMethod.FromLiteral)]
+        public static double ProcessType(StaticFilterType type) => 3;
         
         [FeatureCalculator("Move")]
         public static double Score_Move(double inputTree, double name) => name;
