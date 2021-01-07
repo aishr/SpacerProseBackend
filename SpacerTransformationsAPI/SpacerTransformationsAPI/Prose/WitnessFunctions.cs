@@ -101,44 +101,31 @@ namespace SpacerTransformationsAPI.Prose
         }
         
         
-        //IEnumerable<int> FilterAllButLast(Node inputTree, string temp)
-        [WitnessFunction("FilterAllButLast", 1)]
-        public ExampleSpec WitnessFilterAllButLast(GrammarRule rule, ExampleSpec spec)
+        //IEnumerable<int> FilterStatic(Node inputTree, StaticFilterType type)
+        [WitnessFunction("FilterStatic", 1)]
+        public DisjunctiveExamplesSpec WitnessType(GrammarRule rule, ExampleSpec spec)
         {
-            var examples = new Dictionary<State, object>();
+            var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {
                 var before = (Node)input[rule.Body[0]];
                 var after = (List<int>)spec.Examples[input];
-
-                if (Semantics.FilterAllButLast(before, "temp").OrderBy(i => i)
-                    .SequenceEqual(after.OrderBy(i => i)))
+                foreach (StaticFilterType type in Enum.GetValues(typeof(StaticFilterType)))
                 {
-                    examples[input] = "temp";
+                    if (Semantics.FilterStatic(before, type).OrderBy(i => i)
+                        .SequenceEqual(after.OrderBy(i => i)))
+                    {
+                        if (!examples.ContainsKey(input))
+                        {
+                            examples[input] = new List<object>();
+                        }
+                        ((List<object>)examples[input]).Add(type);
+                    }
                 }
             }
 
-            return new ExampleSpec(examples);
-        }
-
-        //IEnumerable<int> FilterByNot(Node inputTree, string temp)
-        [WitnessFunction("FilterByNot", 1)]
-        public ExampleSpec WitnessFilterByNot(GrammarRule rule, ExampleSpec spec)
-        {
-            var examples = new Dictionary<State, object>();
-            foreach (var input in spec.ProvidedInputs)
-            {
-                var before = (Node)input[rule.Body[0]];
-                var after = (List<int>)spec.Examples[input];
-
-                if (Semantics.FilterByNot(before, "temp").OrderBy(i => i)
-                    .SequenceEqual(after.OrderBy(i => i)))
-                {
-                    examples[input] = "temp";
-                }
-            }
-
-            return new ExampleSpec(examples);
+            return new DisjunctiveExamplesSpec(examples);
+            
         }
         
         //Node Move(Node inputTree, Tuple<int, bool> positionLeft)
