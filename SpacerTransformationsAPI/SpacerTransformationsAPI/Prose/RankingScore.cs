@@ -10,10 +10,10 @@ namespace SpacerTransformationsAPI.Prose
         protected override double GetFeatureValueForVariable(VariableNode variable) => 0;
         public static double ScoreForContext = 0;
         
-        [FeatureCalculator("Transform")]
-        public static double Score_Transform(double inputTree, double leftSide) => leftSide;
+        [FeatureCalculator("ToImp")]
+        public static double Score_ToImp(double inputTree, double leftSide) => leftSide;
 
-        [FeatureCalculator("Filter")]
+        [FeatureCalculator("FilterByName")]
         public static double Score_Filter(double inputTree, double name) => name;
         
         [FeatureCalculator("FilterAllButLast")]
