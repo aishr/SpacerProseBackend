@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Z3;
@@ -80,7 +79,6 @@ namespace SpacerTransformationsAPI.Prose
                     }
 
                     return result;
-                    break;
                 case StaticFilterType.AllButLast:
                     return Enumerable.Range(0, children.Count - 1).ToList();
                 default:
@@ -111,7 +109,7 @@ namespace SpacerTransformationsAPI.Prose
             return result;
         }
 
-        public static Node Move(Node inputTree, Tuple<int, bool> positionLeft)
+        public static Node Move(Node inputTree, int position, bool left)
         {
             var ctx = inputTree.Ctx;
             var children = inputTree.Children;
@@ -125,32 +123,38 @@ namespace SpacerTransformationsAPI.Prose
                 Z3_decl_kind.Z3_OP_AND,
                 Z3_decl_kind.Z3_OP_OR
             };
-            if (!movable.Contains(op) || positionLeft.Item1 < 0) return inputTree;
 
-            if(movable.Contains(op) && positionLeft.Item1 >= 0)
+            if (!movable.Contains(op))
             {
-                foreach (var child in children)
-                {
-                    retExprs.Add(child.Expr);
-                }
+                return inputTree;
+            }
 
-                for (var i = 0; i < retExprs.Count; ++i)
+            if (!(position >= 0 && position < children.Count()))
+            {
+                return inputTree;
+            }
+
+            foreach (var child in children)
+            {
+                retExprs.Add(child.Expr);
+            }
+
+            for (var i = 0; i < retExprs.Count; ++i)
+            {
+                if (i == position)
                 {
-                    if (i == positionLeft.Item1)
+                    if (left && i != 0)
                     {
-                        if (positionLeft.Item2 && i != 0)
-                        {
-                            var temp = retExprs[i];
-                            retExprs[i] = retExprs[i - 1];
-                            retExprs[i - 1] = temp;
-                        }
+                        var temp = retExprs[i];
+                        retExprs[i] = retExprs[i - 1];
+                        retExprs[i - 1] = temp;
+                    }
 
-                        else if (!positionLeft.Item2 && i != children.Count - 1)
-                        {
-                            var temp = retExprs[i];
-                            retExprs[i] = retExprs[i + 1];
-                            retExprs[i + 1] = temp;
-                        }
+                    else if (!left && i != children.Count - 1)
+                    {
+                        var temp = retExprs[i];
+                        retExprs[i] = retExprs[i + 1];
+                        retExprs[i + 1] = temp;
                     }
                 }
             }
@@ -179,40 +183,30 @@ namespace SpacerTransformationsAPI.Prose
             return Utils.HandleSmtLibParsed(result, ctx);
         }
 
-        public static string IndexByName(Node inputTree, string name)
+        public static int IndexByName(Node inputTree, string name)
         {
             for (var i = 0; i < inputTree.Children.Count; ++i)
             {
                 if (inputTree.Children[i].HasIdentifier(name))
                 {
-                    return i.ToString();
+                    return i;
                 }
             }
 
-            return (-1).ToString();
+            return (-1);
         }
 
-        public static string IndexFromFront(Node inputTree, string index)
+        public static int IndexFromFront(Node inputTree, int index)
         {
             return index;
         }
 
-        public static string IndexFromBack(Node inputTree, string index)
+        public static int IndexFromBack(Node inputTree, int index)
         {
-            return (inputTree.Children.Count - int.Parse(index) - 1).ToString();
-        }
-
-        public static Tuple<int, bool> MakeMoveLeft(Node inputTree, string position)
-        {
-            return new Tuple<int, bool>(int.Parse(position), true);
-        }
-
-        public static Tuple<int, bool> MakeMoveRight(Node inputTree, string position)
-        {
-            return new Tuple<int, bool>(int.Parse(position), false);
+            return (inputTree.Children.Count - index - 1);
         }
         
-        public static Node SquashNegation(Node inputTree, string temp)
+        public static Node SquashNegation(Node inputTree, string symbol)
         {
             if (!inputTree.IsNot())
             {
@@ -220,7 +214,7 @@ namespace SpacerTransformationsAPI.Prose
             }
 
             // !(!(a = b)) --> a = b
-            if(inputTree.Children[0].IsNot())
+            if(inputTree.Children[0].IsNot() && symbol == "not")
             {
                 return inputTree.Children[0].Children[0];
             }
@@ -231,7 +225,7 @@ namespace SpacerTransformationsAPI.Prose
             {
                 var ctx = inputTree.Ctx;
                 var children = inputTree.Children[0].Children;
-                var op = inputTree.Children[0].Expr.FuncDecl.DeclKind;
+                var op = inputTree.Children[0].Expr.FuncDecl;
                 var negatable = new List<Z3_decl_kind>()
                 {
                     Z3_decl_kind.Z3_OP_LT,
@@ -240,14 +234,14 @@ namespace SpacerTransformationsAPI.Prose
                     Z3_decl_kind.Z3_OP_GE,
                 };
 
-                if (!negatable.Contains(op))
+                if (!(negatable.Contains(op.DeclKind) && op.Name.ToString() == symbol))
                 {
                     return inputTree;
                 }
 
                 Expr result = null;
 
-                switch (op)
+                switch (op.DeclKind)
                 {
                     case Z3_decl_kind.Z3_OP_LT:
                         result = ctx.MkGe((ArithExpr)children[0].Expr, (ArithExpr)children[1].Expr);
@@ -268,11 +262,12 @@ namespace SpacerTransformationsAPI.Prose
             
         }
 
-        public static Node FlipComparison(Node inputTree, string temp)
+        public static Node FlipComparison(Node inputTree, string symbol, string name)
         {
             var ctx = inputTree.Ctx;
             var children = inputTree.Children;
-            var op = inputTree.Expr.FuncDecl.DeclKind;
+            var op = inputTree.Expr.FuncDecl;
+
             var flippable = new List<Z3_decl_kind>()
                     {
                         Z3_decl_kind.Z3_OP_LT,
@@ -281,14 +276,19 @@ namespace SpacerTransformationsAPI.Prose
                         Z3_decl_kind.Z3_OP_GE
                     };
 
-            if (!flippable.Contains(op))
+            if (!(flippable.Contains(op.DeclKind) && op.Name.ToString() == symbol))
+            {
+                return inputTree;
+            }
+
+            if (!inputTree.HasIdentifier(name))
             {
                 return inputTree;
             }
 
             Expr result = null;
 
-            switch (op)
+            switch (op.DeclKind)
             {
                 case Z3_decl_kind.Z3_OP_LT:
                     result = ctx.MkGt((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);

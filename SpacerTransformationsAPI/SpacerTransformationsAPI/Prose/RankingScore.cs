@@ -23,17 +23,8 @@ namespace SpacerTransformationsAPI.Prose
         [FeatureCalculator("FilterByProcess")]
         public static double Score_FilterByProcess(double inputTree, double process) => process;
         
-        [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
-        public static double NameScore(string type) => (type.Equals("any")) ? 1 : 3;
-        
-        [FeatureCalculator("process", Method = CalculationMethod.FromLiteral)]
-        public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 3;
-        
-        [FeatureCalculator("type", Method = CalculationMethod.FromLiteral)]
-        public static double ProcessType(StaticFilterType type) => 3;
-        
         [FeatureCalculator("Move")]
-        public static double Score_Move(double inputTree, double name) => name;
+        public static double Score_Move(double inputTree, double position, double direction) => position;
 
         [FeatureCalculator("IndexByName")]
         public static double Score_IndexByName(double inputTree, double name) => name;
@@ -43,23 +34,29 @@ namespace SpacerTransformationsAPI.Prose
 
         [FeatureCalculator("IndexFromBack")]
         public static double Score_IndexFromBack(double inputTree, double index) => index;
-
-        [FeatureCalculator("MakeMoveLeft")]
-        public static double Score_MakeMoveLeft(double inputTree, double position) => position;
-
-        [FeatureCalculator("MakeMoveRight")]
-        public static double Score_MakeMoveRight(double inputTree, double position) => position;
         
         [FeatureCalculator("SquashNegation")]
-        public static double Score_SquashNegation(double inputTree, double temp) => temp;
+        public static double Score_SquashNegation(double inputTree, double symbol) => symbol;
 
         [FeatureCalculator("FlipComparison")]
-        public static double Score_FlipComparison(double inputTree, double temp) => temp;
+        public static double Score_FlipComparison(double inputTree, double symbol, double name) => symbol;
+        
+        [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
+        public static double NameScore(string type) => (type.Equals("any")) ? 1 : 3;
+        
+        [FeatureCalculator("process", Method = CalculationMethod.FromLiteral)]
+        public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 3;
+        
+        [FeatureCalculator("type", Method = CalculationMethod.FromLiteral)]
+        public static double ProcessType(StaticFilterType type) => 3;
 
         [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
-        public static double Score_Index(string type) => (type.Equals("any")) ? 1 : 3;
+        public static double IndexScore(int type) => type < 0 ? 1 : 3;
         
-        [FeatureCalculator("temp", Method = CalculationMethod.FromLiteral)]
-        public static double TempScore(string type) => (type.Equals("any")) ? 1 : 3;
+        [FeatureCalculator("symbol", Method = CalculationMethod.FromLiteral)]
+        public static double SymbolScore(string type) => (type.Equals("any")) ? 1 : 3;
+        
+        [FeatureCalculator("left", Method = CalculationMethod.FromLiteral)]
+        public static double LeftScore(bool type) => 3;
     }
 }
