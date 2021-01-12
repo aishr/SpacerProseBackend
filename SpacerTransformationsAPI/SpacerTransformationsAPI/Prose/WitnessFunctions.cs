@@ -15,7 +15,7 @@ namespace SpacerTransformationsAPI.Prose
     {
         public WitnessFunctions(Grammar grammar) : base(grammar) { }
         
-        //Node Transform(Node inputTree, List<int> leftSide)
+        //Node ToImp(Node inputTree, List<int> leftSide)
         //Given inputTree, I and outputTree, O, WitnessLeftSide(I, O) = R
         //where for every r in R, Transform2(I, r) = O
         // [a, b, c] -> [a], [b], [c], [a,b], [a,c], [a,b,c]
@@ -128,9 +128,9 @@ namespace SpacerTransformationsAPI.Prose
             
         }
         
-        //Node Move(Node inputTree, Tuple<int, bool> positionLeft)
+        //Node Move(Node inputTree, int position, bool left)
         [WitnessFunction("Move", 1)]
-        public ExampleSpec WitnessMovePosition(GrammarRule rule, ExampleSpec spec)
+        public ExampleSpec WitnessPosition(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
@@ -139,29 +139,71 @@ namespace SpacerTransformationsAPI.Prose
                 var after = (Node)spec.Examples[input];
                 for (var i = 0; i < after.Children.Count; ++i)
                 {
-                    if (Semantics.Move(before, new Tuple<int, bool>(i, true)).IsEqualTo(after))
+                    if (Semantics.Move(before, i, true).IsEqualTo(after))
                     {
-                        examples[input] = new Tuple<int, bool>(i, true);
+                        examples[input] = i;
                     }
-                    if (Semantics.Move(before, new Tuple<int, bool>(i, false)).IsEqualTo(after))
+
+                    if (Semantics.Move(before, i, false).IsEqualTo(after))
                     {
-                        examples[input] = new Tuple<int, bool>(i, false);
+                        examples[input] = i;
                     }
                 }
             }
 
             return new ExampleSpec(examples);
         }
+        
+        //Node Move(Node inputTree, int position, bool left)
+        [WitnessFunction("Move", 2, DependsOnParameters = new[] {1})]
+        public DisjunctiveExamplesSpec WitnessLeft(GrammarRule rule, ExampleSpec spec, ExampleSpec positionSpec)
+        {
+            var examples = new Dictionary<State, IEnumerable<object>>();
+            foreach (var input in spec.Examples)
+            {
+                var inputState = input.Key; 
+                var before = (Node)inputState[rule.Body[0]];
+                var position = (int)positionSpec.Examples[inputState];
+                var after = (Node)spec.Examples[inputState];
+                if (Semantics.Move(before, position, true).IsEqualTo(after))
+                {
+                    if (!examples.ContainsKey(inputState))
+                    {
+                        examples[inputState] = new List<object>();
+                    }
+
+                    if (!(examples[inputState]).Contains(true))
+                    {
+                        ((List<object>)examples[inputState]).Add(true);
+                    }
+                }
+
+                if (Semantics.Move(before, position, false).IsEqualTo(after))
+                {
+                    if (!examples.ContainsKey(inputState))
+                    {
+                        examples[inputState] = new List<object>();
+                    }
+
+                    if (!(examples[inputState]).Contains(false))
+                    {
+                        ((List<object>)examples[inputState]).Add(false);
+                    }
+                }
+            }
+
+            return new DisjunctiveExamplesSpec(examples);
+        }
 
         //string IndexByName(Node inputTree, string name)
         [WitnessFunction("IndexByName", 1)]
-        public ExampleSpec WitnessIndexByName(GrammarRule rule, ExampleSpec spec)
+        public ExampleSpec WitnessName2(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
             {
                 var before = (Node)input[rule.Body[0]];
-                var after = (string)spec.Examples[input];
+                var after = (int)spec.Examples[input];
                 var children = before.GetIdentifiers();
 
                 foreach (var child in children)
@@ -176,21 +218,21 @@ namespace SpacerTransformationsAPI.Prose
             return new ExampleSpec(examples);
         }
 
-        //string IndexFromFront(Node inputTree, string index)
+        //int IndexFromFront(Node inputTree, int index)
         [WitnessFunction("IndexFromFront", 1)]
-        public ExampleSpec WitnessIndexByIndex(GrammarRule rule, ExampleSpec spec)
+        public ExampleSpec WitnessIndex(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
             {
                 var before = (Node)input[rule.Body[0]];
-                var after = (string)spec.Examples[input];
+                var after = (int)spec.Examples[input];
 
                 for (var i = 0; i < before.Children.Count; ++i)
                 {
-                    if(Semantics.IndexFromFront(before, i.ToString()) == after)
+                    if (Semantics.IndexFromFront(before, i) == after)
                     {
-                        examples[input] = i.ToString();
+                        examples[input] = i;
                     }
                 }
             }
@@ -198,21 +240,21 @@ namespace SpacerTransformationsAPI.Prose
             return new ExampleSpec(examples);
         }
 
-        //string IndexFromBack(Node inputTree, string index)
+        //int IndexFromBack(Node inputTree, int index)
         [WitnessFunction("IndexFromBack", 1)]
-        public ExampleSpec WitnessIndexLast(GrammarRule rule, ExampleSpec spec)
+        public ExampleSpec WitnessIndex2(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
             {
                 var before = (Node)input[rule.Body[0]];
-                var after = (string)spec.Examples[input];
+                var after = (int)spec.Examples[input];
 
                 for (var i = 0; i < before.Children.Count; ++i)
                 {
-                    if (Semantics.IndexFromBack(before, i.ToString()) == after)
+                    if (Semantics.IndexFromBack(before, i) == after)
                     {
-                        examples[input] = i.ToString();
+                        examples[input] = i;
                     }
                 }
             }
@@ -220,53 +262,9 @@ namespace SpacerTransformationsAPI.Prose
             return new ExampleSpec(examples);
         }
 
-        //Tuple<int, bool> MakeMoveLeft(Node inputTree, string position)
-        [WitnessFunction("MakeMoveLeft", 1)]
-        public ExampleSpec MakeMoveLeft(GrammarRule rule, ExampleSpec spec)
-        {
-            var examples = new Dictionary<State, object>();
-            foreach (var input in spec.ProvidedInputs)
-            {
-                var before = (Node)input[rule.Body[0]];
-                var after = (Tuple<int, bool>)spec.Examples[input];
-
-                for (var i = 0; i < before.Children.Count; ++i)
-                {
-                    if (Semantics.MakeMoveLeft(before, i.ToString()).Equals(after))
-                    {
-                        examples[input] = i.ToString();
-                    }
-                }
-            }
-
-            return new ExampleSpec(examples);
-        }
-
-        //Tuple<int, bool> MakeMoveRight(Node inputTree, string position)
-        [WitnessFunction("MakeMoveRight", 1)]
-        public ExampleSpec MakeMoveRight(GrammarRule rule, ExampleSpec spec)
-        {
-            var examples = new Dictionary<State, object>();
-            foreach (var input in spec.ProvidedInputs)
-            {
-                var before = (Node)input[rule.Body[0]];
-                var after = (Tuple<int, bool>)spec.Examples[input];
-
-                for (var i = 0; i < before.Children.Count; ++i)
-                {
-                    if (Semantics.MakeMoveRight(before, i.ToString()).Equals(after))
-                    {
-                        examples[input] = i.ToString();
-                    }
-                }
-            }
-
-            return new ExampleSpec(examples);
-        }
-
-        //Node SquashNegation(Node inputTree, string temp)
+        //Node SquashNegation(Node inputTree, string symbol)
         [WitnessFunction("SquashNegation", 1)]
-        public ExampleSpec WitnessSquashNegation(GrammarRule rule, ExampleSpec spec)
+        public ExampleSpec WitnessSymbol(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
@@ -274,18 +272,30 @@ namespace SpacerTransformationsAPI.Prose
                 var before = (Node)input[rule.Body[0]];
                 var after = (Node)spec.Examples[input];
 
-                if(Semantics.SquashNegation(before, "temp").IsEqualTo(after))
+                var negatable = new List<string>()
+                    {
+                        "not",
+                        "<",
+                        ">",
+                        "<=",
+                        ">="
+                    };
+
+                foreach (var symbol in negatable)
                 {
-                    examples[input] = "temp";
+                    if (Semantics.SquashNegation(before, symbol).IsEqualTo(after))
+                    {
+                        examples[input] = symbol;
+                    }
                 }
             }
 
             return new ExampleSpec(examples);
         }
 
-        //Node SquashNegation(Node inputTree, string temp)
+        //Node FlipComparison(Node inputTree, string symbol, string name)
         [WitnessFunction("FlipComparison", 1)]
-        public ExampleSpec WitnessFlipComparison(GrammarRule rule, ExampleSpec spec)
+        public ExampleSpec WitnessSymbol2(GrammarRule rule, ExampleSpec spec)
         {
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
@@ -293,13 +303,69 @@ namespace SpacerTransformationsAPI.Prose
                 var before = (Node)input[rule.Body[0]];
                 var after = (Node)spec.Examples[input];
 
-                if (Semantics.FlipComparison(before, "temp").IsEqualTo(after))
+                var flippable = new List<string>()
+                    {
+                        "<",
+                        ">",
+                        "<=",
+                        ">="
+                    };
+
+                var children = before.GetIdentifiers();
+
+                foreach (var symbol in flippable)
                 {
-                    examples[input] = "temp";
+                    foreach (var child in children)
+                    {
+                        if (Semantics.FlipComparison(before, symbol, child).IsEqualTo(after))
+                        {
+                            examples[input] = symbol;
+                        }
+                    }
                 }
             }
 
             return new ExampleSpec(examples);
+        }
+
+        //Node FlipComparison(Node inputTree, string symbol, string name)
+        [WitnessFunction("FlipComparison", 2)]
+        public DisjunctiveExamplesSpec WitnessName3(GrammarRule rule, ExampleSpec spec)
+        {
+            var examples = new Dictionary<State, IEnumerable<object>>();
+            foreach (var input in spec.ProvidedInputs)
+            {
+                var before = (Node)input[rule.Body[0]];
+                var after = (Node)spec.Examples[input];
+
+                var flippable = new List<string>()
+                    {
+                        "<",
+                        ">",
+                        "<=",
+                        ">="
+                    };
+
+                var children = before.GetIdentifiers();
+
+                foreach (var symbol in flippable)
+                {
+                    foreach (var child in children)
+                    {
+                        if (Semantics.FlipComparison(before, symbol, child).IsEqualTo(after))
+                        {
+                            if (!examples.ContainsKey(input))
+                            {
+                                examples[input] = new List<string>();
+                            }
+
+                            ((List<string>)examples[input]).Add(child);
+                        }
+                    }
+                }
+            }
+
+            return new DisjunctiveExamplesSpec(examples);
         }
     }
 }
