@@ -39,7 +39,13 @@ namespace SpacerTransformationsAPI.Prose
         public static double Score_SquashNegation(double inputTree, double symbol) => symbol;
 
         [FeatureCalculator("FlipComparison")]
-        public static double Score_FlipComparison(double inputTree, double symbol, double name) => symbol;
+        public static double Score_FlipComparison(double inputTree, double symbol, double flip) => symbol;
+
+        [FeatureCalculator("FlipByName")]
+        public static double Score_FlipByName(double inputTree, double name) => name;
+
+        [FeatureCalculator("FlipByProcess")]
+        public static double Score_FlipByProcess(double inputTree, double process) => process;
         
         [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
         public static double NameScore(string type) => (type.Equals("any")) ? 1 : 3;
