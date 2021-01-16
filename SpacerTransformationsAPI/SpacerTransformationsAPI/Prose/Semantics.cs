@@ -19,6 +19,7 @@ namespace SpacerTransformationsAPI.Prose
             var children = inputTree.Children;
             var leftSideNodes = new List<BoolExpr>();
             var rightSideNodes = new List<BoolExpr>();
+            
             for (var i = 0; i < children.Count; i++)
             {
                 if (leftSide.Contains(i))
@@ -31,13 +32,14 @@ namespace SpacerTransformationsAPI.Prose
                 }
             }
 
-
             var impliesLeftSide = leftSideNodes.Count == 1 ? leftSideNodes[0] : ctx.MkAnd(leftSideNodes);
             var impliesRightSide = rightSideNodes.Count == 1 ? rightSideNodes[0] : ctx.MkOr(rightSideNodes);
+            
             if (leftSideNodes.Count == 0)
             {
                 return Utils.HandleSmtLibParsed(impliesRightSide, ctx);
             }
+            
             if (rightSideNodes.Count == 0)
             {
                 return Utils.HandleSmtLibParsed(impliesLeftSide, ctx);
@@ -46,10 +48,12 @@ namespace SpacerTransformationsAPI.Prose
             var result = ctx.MkImplies(impliesLeftSide, impliesRightSide);
             return Utils.HandleSmtLibParsed(result, ctx);
         }
+        
         public static IEnumerable<int> FilterByName(Node inputTree, string name)
         {
             var result = new List<int>();
             var children = inputTree.Children;
+            
             for (var i = 0; i < children.Count; i++)
             {
                 if (children[i].HasIdentifier(name))
@@ -60,32 +64,7 @@ namespace SpacerTransformationsAPI.Prose
 
             return result;
         }
-
-        public static IEnumerable<int> FilterStatic(Node inputTree, StaticFilterType type)
-        {
-            var children = inputTree.Children;
-
-            switch (type)
-            {
-                case StaticFilterType.Not:
-                    var result = new List<int>();
-
-                    for (var i = 0; i < children.Count; i++)
-                    {
-                        if (children[i].IsNot())
-                        {
-                            result.Add(i);
-                        }
-                    }
-
-                    return result;
-                case StaticFilterType.AllButLast:
-                    return Enumerable.Range(0, children.Count - 1).ToList();
-                default:
-                    return null;
-            }
-        }
-
+        
         public static IEnumerable<int> FilterByProcess(Node inputTree, string process)
         {
             var result = new List<int>();
@@ -107,6 +86,32 @@ namespace SpacerTransformationsAPI.Prose
             }
 
             return result;
+        }
+
+        public static IEnumerable<int> FilterStatic(Node inputTree, StaticFilterType type)
+        {
+            var children = inputTree.Children;
+
+            switch (type)
+            {
+                case StaticFilterType.Not:
+                    var result = new List<int>();
+
+                    for (var i = 0; i < children.Count; i++)
+                    {
+                        if (children[i].IsNot())
+                        {
+                            result.Add(i);
+                        }
+                    }
+                    return result;
+                
+                case StaticFilterType.AllButLast:
+                    return Enumerable.Range(0, children.Count - 1).ToList();
+                
+                default:
+                    return null;
+            }
         }
 
         public static Node Move(Node inputTree, int position, bool left)
@@ -193,7 +198,7 @@ namespace SpacerTransformationsAPI.Prose
                 }
             }
 
-            return (-1);
+            return -1;
         }
 
         public static int IndexFromFront(Node inputTree, int index)
@@ -203,7 +208,7 @@ namespace SpacerTransformationsAPI.Prose
 
         public static int IndexFromBack(Node inputTree, int index)
         {
-            return (inputTree.Children.Count - index - 1);
+            return inputTree.Children.Count - index - 1;
         }
         
         public static Node SquashNegation(Node inputTree, string symbol)
@@ -262,7 +267,7 @@ namespace SpacerTransformationsAPI.Prose
             
         }
 
-        public static Node FlipComparison(Node inputTree, string symbol, string name)
+        public static Node FlipComparison(Node inputTree, string symbol, bool flip)
         {
             var ctx = inputTree.Ctx;
             var children = inputTree.Children;
@@ -281,7 +286,7 @@ namespace SpacerTransformationsAPI.Prose
                 return inputTree;
             }
 
-            if (!inputTree.HasIdentifier(name))
+            if (!flip)
             {
                 return inputTree;
             }
@@ -305,6 +310,16 @@ namespace SpacerTransformationsAPI.Prose
             }
 
             return Utils.HandleSmtLibParsed(result, ctx);
+        }
+        
+        public static bool FlipByName(Node inputTree, string name)
+        {
+            return inputTree.HasIdentifier(name);
+        }
+
+        public static bool FlipByProcess(Node inputTree, string process)
+        {
+            return inputTree.GetProcesses().Contains(process);
         }
     }
 }
