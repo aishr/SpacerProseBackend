@@ -54,7 +54,7 @@ namespace SpacerTransformationsAPI.Prose
         public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 3;
         
         [FeatureCalculator("type", Method = CalculationMethod.FromLiteral)]
-        public static double ProcessType(StaticFilterType type) => 3;
+        public static double TypeScore(StaticFilterType type) => 3;
 
         [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
         public static double IndexScore(int type) => type < 0 ? 1 : 3;
