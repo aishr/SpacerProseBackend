@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2.Model.Internal.MarshallTransformations;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SpacerTransformationsAPI.Functions;
@@ -13,22 +13,23 @@ namespace SpacerTransformationsAPI.Controllers
     public class VariablesController: Controller
     {
         [HttpPost]
-        public async Task<ActionResult> Replace([FromBody]ReplaceRequestBody requestBody)
+        public ActionResult Replace([FromBody]ReplaceRequestBody requestBody)
         {
             
             try
             {
                 Console.WriteLine(requestBody.Instance);
-
-                var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
-                var lemmas = DynamoDb.DbToSpacerInstance(rawLemmas);
+                // var instance = requestBody.Instance;
+                var rawSpacerInstance = requestBody.SpacerInstance;
+                // var lemmas = DynamoDb.DbToSpacerInstance(instance, rawLemmas);
+                var lemmas = JsonConvert.DeserializeObject<SpacerInstance>(rawSpacerInstance);
                 foreach (var kvp in lemmas.Lemmas)
                 {
                     foreach (var io in requestBody.Params)
                     {
-                        if (lemmas.Lemmas[kvp.Key].Readable == null) continue;
-                        lemmas.Lemmas[kvp.Key].Raw = lemmas.Lemmas[kvp.Key].Raw.Replace(io.Source, io.Target);
-                        lemmas.Lemmas[kvp.Key].Readable = lemmas.Lemmas[kvp.Key].Readable.Replace(io.Source, io.Target);
+                        if (lemmas.Lemmas[kvp.Key].readable == null) continue;
+                        lemmas.Lemmas[kvp.Key].raw = lemmas.Lemmas[kvp.Key].raw.Replace(io.Source, io.Target);
+                        lemmas.Lemmas[kvp.Key].readable = lemmas.Lemmas[kvp.Key].readable.Replace(io.Source, io.Target);
                     }
                 }
                 Console.WriteLine("Transformation complete");
