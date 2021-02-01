@@ -19,9 +19,7 @@ namespace SpacerTransformationsAPI.Controllers
             try
             {
                 Console.WriteLine(requestBody.Instance);
-                // var instance = requestBody.Instance;
                 var rawSpacerInstance = requestBody.SpacerInstance;
-                // var lemmas = DynamoDb.DbToSpacerInstance(instance, rawLemmas);
                 var lemmas = JsonConvert.DeserializeObject<SpacerInstance>(rawSpacerInstance);
                 foreach (var kvp in lemmas.Lemmas)
                 {
