@@ -53,9 +53,9 @@ namespace SpacerTransformationsAPI.Controllers
         [HttpPost]
         public ActionResult LearnTransformationModified([FromBody]LearnTransformModifiedRequestBody requestBody)
         {
-
             try
             {
+                Console.WriteLine(requestBody.Instance);
 
                 ProgramSet learned;
                 using (var ctx = new Context())
@@ -101,57 +101,26 @@ namespace SpacerTransformationsAPI.Controllers
                 Console.WriteLine(requestBody.Program);
                 var finalProgram = ProgramNode.Parse(requestBody.Program, _grammar.Value);
 
-                var rawLemmas = requestBody.ExprMap;
-                var instance = requestBody.Instance;
-                // var lemmas = DynamoDb.DbToSpacerInstance(instance, rawLemmas);
-                var lemmas = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(rawLemmas);
-                var exprMap = new SpacerInstance(instance);
+                // var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
+                var rawSpacerInstance = requestBody.SpacerInstance;
+                // var lemmas = DynamoDb.DbToSpacerInstance(rawLemmas);
+                var lemmas = JsonConvert.DeserializeObject<SpacerInstance>(rawSpacerInstance);
                 using (var ctx = new Context())
                 {
-                    foreach (var kvp in lemmas)
+                    foreach (var kvp in lemmas.Lemmas)
                     {
-                        var raw = "";
-                        var readable = "";
-                        Console.WriteLine("kvp", kvp);
-                        foreach(var lemma_kvp in kvp.Value){
-                            if (lemma_kvp.Key == "raw"){
-                                raw = (string)lemma_kvp.Value;
-                            }
-                            if(lemma_kvp.Key == "readable"){
-                                readable = (string)lemma_kvp.Value;
-                            }
-
-                        }
-                        if (raw != "")
+                        if (kvp.Value.raw != "")
                         {
-                            try{
-                                //add try catch to handle stuff that cannot be parsed
-                                var parsedSmtLib =
-                                    SmtLib.StringToSmtLib(ctx, string.Format(SmtPrefix, requestBody.DeclareStatements, raw));
-                                if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
-                                {
-                                    var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
-                                    var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
-                                    var result = (Node) finalProgram.Invoke(stateInput);
+                            var parsedSmtLib =
+                                SmtLib.StringToSmtLib(ctx, string.Format(SmtPrefix, requestBody.DeclareStatements, kvp.Value.raw));
+                            if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
+                            {
+                                var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
+                                var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
+                                var result = (Node) finalProgram.Invoke(stateInput);
 
-                                    exprMap.Lemmas.Add(int.Parse(kvp.Key), new Lemma(){
-                                            Raw = result.Expr.ToString(),
-                                                Readable = ReadableParser.ParseResult(result.Expr),
-                                                }
-                                    );
-                                    Console.WriteLine(result.Expr);
-                                }
-
-                            }
-                            catch (Exception ex){
-                                //something wrong
-                                Console.WriteLine(ex);
-                                exprMap.Lemmas.Add(int.Parse(kvp.Key), new Lemma(){
-                                        Raw = raw,
-                                            Readable = readable,
-                                            }
-                                );
-
+                                lemmas.Lemmas[kvp.Key].raw = result.Expr.ToString();
+                                lemmas.Lemmas[kvp.Key].readable = ReadableParser.ParseResult(result.Expr);
                             }
 
                         }
@@ -159,7 +128,7 @@ namespace SpacerTransformationsAPI.Controllers
                     ctx.Dispose();
                 }
                 Console.WriteLine("Transformation complete");
-                return Ok(JsonConvert.SerializeObject(exprMap.Lemmas));
+                return Ok(JsonConvert.SerializeObject(lemmas.Lemmas));
             }
             catch (Exception ex)
             {
@@ -169,5 +138,6 @@ namespace SpacerTransformationsAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
     }
 }
