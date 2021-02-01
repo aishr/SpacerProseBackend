@@ -101,9 +101,7 @@ namespace SpacerTransformationsAPI.Controllers
                 Console.WriteLine(requestBody.Program);
                 var finalProgram = ProgramNode.Parse(requestBody.Program, _grammar.Value);
 
-                // var rawLemmas = await DynamoDb.GetLemmas(requestBody.Instance);
                 var rawSpacerInstance = requestBody.SpacerInstance;
-                // var lemmas = DynamoDb.DbToSpacerInstance(rawLemmas);
                 var lemmas = JsonConvert.DeserializeObject<SpacerInstance>(rawSpacerInstance);
                 using (var ctx = new Context())
                 {
