@@ -12,5 +12,7 @@ namespace SpacerTransformationsAPI.Models
         public string DeclareStatements { get; set; }
         [JsonProperty(PropertyName = "inputOutputExamples")]
         public List<TrainingInputOutput> InputOutputExamples { get; set; }
+        [JsonProperty(PropertyName = "exprMap")]
+        public string ExprMap { get; set; }
     }
 }

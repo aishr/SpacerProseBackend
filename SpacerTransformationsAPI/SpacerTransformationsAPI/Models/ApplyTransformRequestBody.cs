@@ -10,5 +10,7 @@ namespace SpacerTransformationsAPI.Models
         public string Program { get; set; }
         [JsonProperty(PropertyName = "declareStatements")]
         public string DeclareStatements { get; set; }
+        [JsonProperty(PropertyName = "exprMap")]
+        public string ExprMap { get; set; }
     }
 }
