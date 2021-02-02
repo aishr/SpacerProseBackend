@@ -81,5 +81,21 @@ namespace SpacerTransformationsAPI.Functions
 
             return indices;
         }
+        public static IEnumerable<Tuple<Node, Node>> GetInputOutputExamplesModified(Context ctx,
+            IEnumerable<TrainingInputOutput> trainingExamples, string prefix, string declareStatements)
+        {
+            var results = new List<Tuple<Node, Node>>();
+             foreach (var example in trainingExamples)
+             {
+                 Console.WriteLine(example);
+                 var input = SmtLib.StringToSmtLib(ctx, string.Format(prefix, declareStatements, example.Input));
+                 var inputTree = Utils.HandleSmtLibParsed(input, ctx);
+                 var output = SmtLib.StringToSmtLib(ctx, string.Format(prefix, declareStatements, example.Output));
+                 var outputTree = Utils.HandleSmtLibParsed(output, ctx);
+                 results.Add(new Tuple<Node, Node>(inputTree, outputTree));
+             }
+
+             return results;
+        }
     }
 }

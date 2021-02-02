@@ -1,10 +1,12 @@
+using Newtonsoft.Json;
+
 namespace SpacerTransformationsAPI.Models
 {
     public class Lemma
     {
-        public string raw { get; set; }
-        public string readable { get; set; }
-        public string editedRaw {get; set; }
-        public string editedReadable {get; set; }
+        [JsonProperty(PropertyName = "raw")]
+        public string Raw { get; set; }
+        [JsonProperty(PropertyName = "readable")]
+        public string Readable { get; set; }
     }
 }
