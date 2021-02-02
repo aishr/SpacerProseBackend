@@ -25,9 +25,9 @@ namespace SpacerTransformationsAPI.Controllers
                 {
                     foreach (var io in requestBody.Params)
                     {
-                        if (lemmas.Lemmas[kvp.Key].readable == null) continue;
-                        lemmas.Lemmas[kvp.Key].raw = lemmas.Lemmas[kvp.Key].raw.Replace(io.Source, io.Target);
-                        lemmas.Lemmas[kvp.Key].readable = lemmas.Lemmas[kvp.Key].readable.Replace(io.Source, io.Target);
+                        if (lemmas.Lemmas[kvp.Key].Readable == null) continue;
+                        lemmas.Lemmas[kvp.Key].Raw = lemmas.Lemmas[kvp.Key].Raw.Replace(io.Source, io.Target);
+                        lemmas.Lemmas[kvp.Key].Readable = lemmas.Lemmas[kvp.Key].Readable.Replace(io.Source, io.Target);
                     }
                 }
                 Console.WriteLine("Transformation complete");

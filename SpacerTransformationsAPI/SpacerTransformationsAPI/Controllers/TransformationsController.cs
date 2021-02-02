@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ProgramSynthesis;
 using Microsoft.ProgramSynthesis.AST;
@@ -27,7 +26,7 @@ namespace SpacerTransformationsAPI.Controllers
     {
         private const string PathToFiles = @"./";
         private const string SmtPrefix = "{0} (assert {1})";
-        private Result<Grammar> _grammar;
+        private readonly Result<Grammar> _grammar;
         private static SynthesisEngine _prose;
 
         public TransformationsController()
@@ -51,7 +50,7 @@ namespace SpacerTransformationsAPI.Controllers
         
         
         [HttpPost]
-        public ActionResult LearnTransformationModified([FromBody]LearnTransformModifiedRequestBody requestBody)
+        public ActionResult LearnTransformation([FromBody]LearnTransformRequestBody requestBody)
         {
             try
             {
@@ -60,7 +59,7 @@ namespace SpacerTransformationsAPI.Controllers
                 ProgramSet learned;
                 using (var ctx = new Context())
                 {
-                    var inputExamples = DynamoDb.GetInputOutputExamplesModified(ctx, requestBody.InputOutputExamples,
+                    var inputExamples = Utils.GetInputOutputExamplesModified(ctx, requestBody.InputOutputExamples,
                         SmtPrefix, requestBody.DeclareStatements);
                     var spec = Utils.CreateExampleSpec(_grammar, inputExamples);
                     RankingScore.ScoreForContext = 100;
@@ -80,6 +79,11 @@ namespace SpacerTransformationsAPI.Controllers
                 var finalPrograms = learned.RealizedPrograms.Select(program => new FinalProgram(program.ToString(), program.PrintAST())).ToList();
                 if (finalPrograms.Count == 0) {
                     Console.WriteLine("No Programs Found");
+                }
+
+                foreach (var program in finalPrograms)
+                {
+                    Console.WriteLine(program.HumanReadableAst);
                 }
                 return Ok(JsonConvert.SerializeObject(finalPrograms));
             }
@@ -107,18 +111,18 @@ namespace SpacerTransformationsAPI.Controllers
                 {
                     foreach (var kvp in lemmas.Lemmas)
                     {
-                        if (kvp.Value.raw != "")
+                        if (kvp.Value.Raw != "")
                         {
                             var parsedSmtLib =
-                                SmtLib.StringToSmtLib(ctx, string.Format(SmtPrefix, requestBody.DeclareStatements, kvp.Value.raw));
+                                SmtLib.StringToSmtLib(ctx, string.Format(SmtPrefix, requestBody.DeclareStatements, kvp.Value.Raw));
                             if (parsedSmtLib.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_OR)
                             {
                                 var input = Utils.HandleSmtLibParsed(parsedSmtLib, ctx);
                                 var stateInput = State.CreateForExecution(_grammar.Value.InputSymbol, input);
                                 var result = (Node) finalProgram.Invoke(stateInput);
 
-                                lemmas.Lemmas[kvp.Key].raw = result.Expr.ToString();
-                                lemmas.Lemmas[kvp.Key].readable = ReadableParser.ParseResult(result.Expr);
+                                lemmas.Lemmas[kvp.Key].Raw = result.Expr.ToString();
+                                lemmas.Lemmas[kvp.Key].Readable = ReadableParser.ParseResult(result.Expr);
                             }
 
                         }

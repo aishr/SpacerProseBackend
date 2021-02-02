@@ -1,4 +1,4 @@
-FROM aishr/spacer-prose-backend:develop
+FROM aishr/spacer-prose-backend:latest
 
 #dynamodb iam creds
 ENV TABLE_NAME "spacer-visualization"
