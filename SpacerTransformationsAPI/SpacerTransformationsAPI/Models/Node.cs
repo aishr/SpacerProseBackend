@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Z3;
@@ -18,7 +19,7 @@ namespace SpacerTransformationsAPI.Models
             Ctx = ctx;
         }
 
-        internal List<Node> Children { get; }
+        public List<Node> Children { get; }
 
         private Node Parent { get; set; }
         private int _id;
@@ -49,21 +50,35 @@ namespace SpacerTransformationsAPI.Models
 
         public bool IsEqualTo(Node tree)
         {
-            if (Children.Count == 0 && tree.Children.Count == 0)
+            if (tree is null)
+            {
+                return false;
+            }
+            if (Children?.Count == 0 && tree.Children.Count == 0)
             {
                 return Expr.ToString() == tree.Expr.ToString();
             }
-            if (Children.Count != tree.Children.Count)
+            if (Children?.Count != tree.Children.Count)
             {
                 return false;
             }
             var result = true;
-            for(var i = 0; i < Children.Count; i++)
+            for (var i = 0; i < Children.Count; i++)
             {
-                result = result && Children[i].IsEqualTo(tree.Children[i]);
+                result = result && Children[i].Equals(tree.Children[i]);
             }
 
             return Type == tree.Type && result;
+        }
+        
+        public override bool Equals(object obj)
+        {
+            return IsEqualTo(obj as Node);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine((int) Type);
         }
 
         public IEnumerable<string> GetIdentifiers()
@@ -117,7 +132,7 @@ namespace SpacerTransformationsAPI.Models
         }
         
         
-        public List<string> GetProcesses()
+        public IEnumerable<string> GetProcesses()
         {
             var children = new List<string>();
 

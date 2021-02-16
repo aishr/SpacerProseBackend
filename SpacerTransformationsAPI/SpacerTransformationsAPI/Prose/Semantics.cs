@@ -8,11 +8,15 @@ namespace SpacerTransformationsAPI.Prose
 {
     public static class Semantics
     {
+        public static Node Id(Node inputTree)
+        {
+            return inputTree;
+        }
         public static Node ToImp(Node inputTree, List<int> leftSide)
         {
             if (inputTree.Expr.FuncDecl.DeclKind != Z3_decl_kind.Z3_OP_OR)
             {
-                return inputTree;
+                return null;
             }
             
             var ctx = inputTree.Ctx;
@@ -131,12 +135,14 @@ namespace SpacerTransformationsAPI.Prose
 
             if (!movable.Contains(op))
             {
-                return inputTree;
+                return null;
             }
 
-            if (!(position >= 0 && position < children.Count()))
+            if (!(position >= 0 && position < children.Count) ||
+                  position == 0 && left ||
+                  position == children.Count - 1 && !left)
             {
-                return inputTree;
+                return null;
             }
 
             foreach (var child in children)
@@ -215,7 +221,7 @@ namespace SpacerTransformationsAPI.Prose
         {
             if (!inputTree.IsNot())
             {
-                return inputTree;
+                return null;
             }
 
             // !(!(a = b)) --> a = b
@@ -241,7 +247,7 @@ namespace SpacerTransformationsAPI.Prose
 
                 if (!(negatable.Contains(op.DeclKind) && op.Name.ToString() == symbol))
                 {
-                    return inputTree;
+                    return null;
                 }
 
                 Expr result = null;
@@ -274,21 +280,21 @@ namespace SpacerTransformationsAPI.Prose
             var op = inputTree.Expr.FuncDecl;
 
             var flippable = new List<Z3_decl_kind>()
-                    {
-                        Z3_decl_kind.Z3_OP_LT,
-                        Z3_decl_kind.Z3_OP_GT,
-                        Z3_decl_kind.Z3_OP_LE,
-                        Z3_decl_kind.Z3_OP_GE
-                    };
+            {
+                Z3_decl_kind.Z3_OP_LT,
+                Z3_decl_kind.Z3_OP_GT,
+                Z3_decl_kind.Z3_OP_LE,
+                Z3_decl_kind.Z3_OP_GE
+            };
 
             if (!(flippable.Contains(op.DeclKind) && op.Name.ToString() == symbol))
             {
-                return inputTree;
+                return null;
             }
 
             if (!flip)
             {
-                return inputTree;
+                return null;
             }
 
             Expr result = null;

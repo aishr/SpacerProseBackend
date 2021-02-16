@@ -11,6 +11,9 @@ namespace SpacerTransformationsAPI.Prose
         protected override double GetFeatureValueForVariable(VariableNode variable) => 0;
         public static double ScoreForContext = 0;
         
+        [FeatureCalculator("Id")]
+        public static double Score_Id(double inputTree) => 10;
+        
         [FeatureCalculator("ToImp")]
         public static double Score_ToImp(double inputTree, double leftSide) => leftSide;
 
