@@ -1,3 +1,4 @@
+using System;
 using Microsoft.ProgramSynthesis;
 using Microsoft.ProgramSynthesis.AST;
 using Microsoft.ProgramSynthesis.Features;
@@ -27,7 +28,7 @@ namespace SpacerTransformationsAPI.Prose
         public static double Score_FilterByProcess(double inputTree, double process) => process;
         
         [FeatureCalculator("Move")]
-        public static double Score_Move(double inputTree, double position, double direction) => position;
+        public static double Score_Move(double inputTree, double position, double direction) => position > direction ? position : direction;
 
         [FeatureCalculator("IndexByName")]
         public static double Score_IndexByName(double inputTree, double name) => name;
@@ -38,8 +39,10 @@ namespace SpacerTransformationsAPI.Prose
         [FeatureCalculator("IndexFromBack")]
         public static double Score_IndexFromBack(double inputTree, double index) => index;
         
+/*
         [FeatureCalculator("SquashNegation")]
         public static double Score_SquashNegation(double inputTree, double symbol) => symbol;
+*/
 
         [FeatureCalculator("FlipComparison")]
         public static double Score_FlipComparison(double inputTree, double symbol, double flip) => symbol;
@@ -61,11 +64,11 @@ namespace SpacerTransformationsAPI.Prose
 
         [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
         public static double IndexScore(int type) => type < 0 ? 1 : 3;
-        
+      
         [FeatureCalculator("symbol", Method = CalculationMethod.FromLiteral)]
         public static double SymbolScore(string type) => (type.Equals("any")) ? 1 : 3;
         
-        [FeatureCalculator("left", Method = CalculationMethod.FromLiteral)]
-        public static double LeftScore(bool type) => 3;
+        [FeatureCalculator("direction", Method = CalculationMethod.FromLiteral)]
+        public static double DirectionScore(Tuple<int, bool> type) => 3;
     }
 }

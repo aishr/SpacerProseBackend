@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Z3;
@@ -78,15 +79,7 @@ namespace SpacerTransformationsAPI.Prose
                 var exprs = children[i].FlattenTree();
                 var indices = Utils.FindSelect(exprs.ToList());
 
-                foreach(int index in indices)
-                {
-                    var selectExpr = exprs[index];
-
-                    if (selectExpr.Args[1].ToString() == process)
-                    {
-                        result.Add(i);
-                    }
-                }          
+                result.AddRange(from index in indices select exprs[index] into selectExpr where selectExpr.Args[1].ToString() == process select i);
             }
 
             return result;
@@ -118,11 +111,11 @@ namespace SpacerTransformationsAPI.Prose
             }
         }
 
-        public static Node Move(Node inputTree, int position, bool left)
+        public static Node Move(Node inputTree, int position, Tuple<int, bool> direction)
         {
+            var (places, left) = direction;
             var ctx = inputTree.Ctx;
             var children = inputTree.Children;
-            var retExprs = new List<Expr>();
             var op = inputTree.Expr.FuncDecl.DeclKind;
             var movable = new List<Z3_decl_kind>()
             {
@@ -133,65 +126,44 @@ namespace SpacerTransformationsAPI.Prose
                 Z3_decl_kind.Z3_OP_OR
             };
 
-            if (!movable.Contains(op))
+            if (!movable.Contains(op) ||
+                position < 0 || 
+                position >= children.Count || 
+                position == 0 && left || 
+                position == children.Count - 1 && !left)
             {
                 return null;
             }
 
-            if (!(position >= 0 && position < children.Count) ||
-                  position == 0 && left ||
-                  position == children.Count - 1 && !left)
-            {
-                return null;
-            }
-
-            foreach (var child in children)
-            {
-                retExprs.Add(child.Expr);
-            }
+            var retExprs = children.Select(child => child.Expr).ToList();
 
             for (var i = 0; i < retExprs.Count; ++i)
             {
-                if (i == position)
+                if (i != position) continue;
+                var newPosition = left switch
                 {
-                    if (left && i != 0)
-                    {
-                        var temp = retExprs[i];
-                        retExprs[i] = retExprs[i - 1];
-                        retExprs[i - 1] = temp;
-                    }
+                    true when position - places >= 0 => position - places,
+                    false when i + places < children.Count => position + places,
+                    _ => -1
+                };
 
-                    else if (!left && i != children.Count - 1)
-                    {
-                        var temp = retExprs[i];
-                        retExprs[i] = retExprs[i + 1];
-                        retExprs[i + 1] = temp;
-                    }
-                }
+                if (newPosition == -1) continue;
+                var itemToBeMoved = retExprs[position];
+                retExprs.RemoveAt(position);
+                retExprs.Insert(newPosition, itemToBeMoved);
             }
 
-            Expr result = null;
-
-            switch (op)
+            Expr result = op switch
             {
-                case Z3_decl_kind.Z3_OP_ADD:
-                    result = ctx.MkAdd(retExprs.Select(expr => (ArithExpr)expr));
-                    break;
-                case Z3_decl_kind.Z3_OP_MUL:
-                    result = ctx.MkMul(retExprs.Select(expr => (ArithExpr)expr));
-                    break;
-                case Z3_decl_kind.Z3_OP_EQ:
-                    result = ctx.MkEq(retExprs[0], retExprs[1]);
-                    break;
-                case Z3_decl_kind.Z3_OP_AND:
-                    result = ctx.MkAnd(retExprs.Select(expr => (BoolExpr)expr));
-                    break;
-                case Z3_decl_kind.Z3_OP_OR:
-                    result = ctx.MkOr(retExprs.Select(expr => (BoolExpr)expr));
-                    break;
-            }
+                Z3_decl_kind.Z3_OP_ADD => ctx.MkAdd(retExprs.Select(expr => (ArithExpr) expr)),
+                Z3_decl_kind.Z3_OP_MUL => ctx.MkMul(retExprs.Select(expr => (ArithExpr) expr)),
+                Z3_decl_kind.Z3_OP_EQ => ctx.MkEq(retExprs[0], retExprs[1]),
+                Z3_decl_kind.Z3_OP_AND => ctx.MkAnd(retExprs.Select(expr => (BoolExpr) expr)),
+                Z3_decl_kind.Z3_OP_OR => ctx.MkOr(retExprs.Select(expr => (BoolExpr) expr)),
+                _ => null
+            };
 
-            return Utils.HandleSmtLibParsed(result, ctx);
+            return result == null ? null : Utils.HandleSmtLibParsed(result, ctx);
         }
 
         public static int IndexByName(Node inputTree, string name)
@@ -217,6 +189,7 @@ namespace SpacerTransformationsAPI.Prose
             return inputTree.Children.Count - index - 1;
         }
         
+        /*
         public static Node SquashNegation(Node inputTree, string symbol)
         {
             if (!inputTree.IsNot())
@@ -272,6 +245,7 @@ namespace SpacerTransformationsAPI.Prose
             }
             
         }
+        */
 
         public static Node FlipComparison(Node inputTree, string symbol, bool flip)
         {
@@ -287,35 +261,21 @@ namespace SpacerTransformationsAPI.Prose
                 Z3_decl_kind.Z3_OP_GE
             };
 
-            if (!(flippable.Contains(op.DeclKind) && op.Name.ToString() == symbol))
+            if (!flip || !(flippable.Contains(op.DeclKind) && op.Name.ToString() == symbol))
             {
                 return null;
             }
 
-            if (!flip)
+            Expr result = op.DeclKind switch
             {
-                return null;
-            }
+                Z3_decl_kind.Z3_OP_LT => ctx.MkGt((ArithExpr) children[1].Expr, (ArithExpr) children[0].Expr),
+                Z3_decl_kind.Z3_OP_GT => ctx.MkLt((ArithExpr) children[1].Expr, (ArithExpr) children[0].Expr),
+                Z3_decl_kind.Z3_OP_LE => ctx.MkGe((ArithExpr) children[1].Expr, (ArithExpr) children[0].Expr),
+                Z3_decl_kind.Z3_OP_GE => ctx.MkLe((ArithExpr) children[1].Expr, (ArithExpr) children[0].Expr),
+                _ => null
+            };
 
-            Expr result = null;
-
-            switch (op.DeclKind)
-            {
-                case Z3_decl_kind.Z3_OP_LT:
-                    result = ctx.MkGt((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
-                    break;
-                case Z3_decl_kind.Z3_OP_GT:
-                    result = ctx.MkLt((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
-                    break;
-                case Z3_decl_kind.Z3_OP_LE:
-                    result = ctx.MkGe((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
-                    break;
-                case Z3_decl_kind.Z3_OP_GE:
-                    result = ctx.MkLe((ArithExpr)children[1].Expr, (ArithExpr)children[0].Expr);
-                    break;
-            }
-
-            return Utils.HandleSmtLibParsed(result, ctx);
+            return result == null ? null : Utils.HandleSmtLibParsed(result, ctx);
         }
         
         public static bool FlipByName(Node inputTree, string name)
