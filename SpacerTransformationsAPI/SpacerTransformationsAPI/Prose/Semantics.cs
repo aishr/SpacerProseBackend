@@ -47,7 +47,7 @@ namespace SpacerTransformationsAPI.Prose
             
             if (rightSideNodes.Count == 0)
             {
-                return Utils.HandleSmtLibParsed(impliesLeftSide, ctx);
+                return Utils.HandleSmtLibParsed(ctx.MkImplies(impliesLeftSide, ctx.MkBool(false)), ctx);
             }
 
             var result = ctx.MkImplies(impliesLeftSide, impliesRightSide);
