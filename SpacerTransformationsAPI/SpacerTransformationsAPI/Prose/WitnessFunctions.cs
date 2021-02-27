@@ -207,10 +207,10 @@ namespace SpacerTransformationsAPI.Prose
         
         //Node Move(Node inputTree, int position, Tuple<int, bool> direction)
         [WitnessFunction("Move", 0)]
-        public ExampleSpec WitnessMoveTree(GrammarRule rule, ExampleSpec spec)
+        public DisjunctiveExamplesSpec WitnessMoveTree(GrammarRule rule, ExampleSpec spec)
         {
             Console.WriteLine($"Witness Function {rule.Id} 0");
-            var examples = new Dictionary<State, object>();
+            var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {
                 var node = (Node) spec.Examples[input];
@@ -218,10 +218,41 @@ namespace SpacerTransformationsAPI.Prose
                 {
                     return null;
                 }
-                examples[input] = input.Bindings.First().Value;
+
+                if (!examples.ContainsKey(input))
+                {
+                    examples[input] = new List<object>();
+                }
+
+                var children = node.Children;
+                for (var i = 0; i < children.Count; i++)
+                {
+                    var possiblePlacesTrue = GeneratePossiblePlaces(children.Count, i, true);
+                    var possiblePlacesFalse = GeneratePossiblePlaces(children.Count, i, false);
+
+                    foreach (var places in possiblePlacesTrue)
+                    {
+                        var direction = new Tuple<int, bool>(places, true);
+                        var actual = Semantics.Move(node, i, direction);
+                        if (actual != null)
+                        {
+                            ((List<object>) examples[input]).Add(actual);
+                        }
+                    }
+                    foreach (var places in possiblePlacesFalse)
+                    {
+                        var direction = new Tuple<int, bool>(places, false);
+                        var actual = Semantics.Move(node, i, direction);
+                        if (actual != null)
+                        {
+                            ((List<object>) examples[input]).Add(actual);
+                        }
+                    }
+                }
+
             }
 
-            return new ExampleSpec(examples);
+            return new DisjunctiveExamplesSpec(examples);
         }
         
         //Node Move(Node inputTree, int position, Tuple<int, bool> direction)
