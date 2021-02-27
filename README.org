@@ -6,7 +6,6 @@
    - copy the https://github.com/nhamlv-55/spacer-visualization/blob/master/docker-compose.yml to a local directory of your choosing
    - run the following command to spin up both containers for the backend
      =docker-compose up=
-   - [OPTIONAL] edit docker containers to pull develop version of containers instead of latest
 
 * Making Changes to the Visualizer
  - clone visualizer repo
