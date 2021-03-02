@@ -140,6 +140,39 @@ namespace SpacerTransformationsAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        
+        [HttpPost]
+        public ActionResult GetReadable([FromBody] ReadableRequestBody requestBody)
+        {
+            
+            try
+            {
+                Console.WriteLine(requestBody.Instance);
 
+                var rawSpacerInstance = requestBody.SpacerInstance;
+                var lemmas = JsonConvert.DeserializeObject<SpacerInstance>(rawSpacerInstance);
+                using (var ctx = new Context())
+                {
+                    foreach (var kvp in lemmas.Lemmas)
+                    {
+                        if (kvp.Value.Raw == "") continue;
+                        var parsedSmtLib =
+                            SmtLib.StringToSmtLib(ctx, string.Format(SmtPrefix, requestBody.DeclareStatements, kvp.Value.Raw));
+
+                        lemmas.Lemmas[kvp.Key].Readable = ReadableParser.ParseResult(parsedSmtLib);
+                    }
+                    ctx.Dispose();
+                }
+                Console.WriteLine("Readable complete");
+                return Ok(JsonConvert.SerializeObject(lemmas.Lemmas));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.TargetSite);
+                Console.WriteLine("Error: " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
