@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Primitives;
 using Microsoft.ProgramSynthesis;
 using Microsoft.ProgramSynthesis.Learning;
 using Microsoft.ProgramSynthesis.Rules;
 using Microsoft.ProgramSynthesis.Specifications;
-using Microsoft.ProgramSynthesis.Transformation.Text.Build.NodeTypes;
 using Microsoft.Z3;
 using SpacerTransformationsAPI.Functions;
 using SpacerTransformationsAPI.Models;
@@ -234,7 +232,7 @@ namespace SpacerTransformationsAPI.Prose
                     {
                         var direction = new Tuple<int, bool>(places, true);
                         var actual = Semantics.Move(node, i, direction);
-                        if (actual != null)
+                        if (actual != null && !examples[input].Contains(actual))
                         {
                             ((List<object>) examples[input]).Add(actual);
                         }
@@ -243,7 +241,7 @@ namespace SpacerTransformationsAPI.Prose
                     {
                         var direction = new Tuple<int, bool>(places, false);
                         var actual = Semantics.Move(node, i, direction);
-                        if (actual != null)
+                        if (actual != null && !examples[input].Contains(actual))
                         {
                             ((List<object>) examples[input]).Add(actual);
                         }
