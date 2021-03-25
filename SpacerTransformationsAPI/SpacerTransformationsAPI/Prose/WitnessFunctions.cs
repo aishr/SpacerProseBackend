@@ -14,7 +14,8 @@ namespace SpacerTransformationsAPI.Prose
     public class WitnessFunctions : DomainLearningLogic
     {
         public WitnessFunctions(Grammar grammar) : base(grammar) { }
-        
+
+        #region ToImp Witness Functions 
         //Node ToImp(Node inputTree, List<int> leftSide)
         //output := A -> B
         //input := !A or B
@@ -202,7 +203,9 @@ namespace SpacerTransformationsAPI.Prose
             return new DisjunctiveExamplesSpec(examples);
             
         }
+        #endregion
         
+        #region Move Witness Functions
         //Node Move(Node inputTree, int position, Tuple<int, bool> direction)
         [WitnessFunction("Move", 0)]
         public DisjunctiveExamplesSpec WitnessMoveTree(GrammarRule rule, ExampleSpec spec)
@@ -254,9 +257,9 @@ namespace SpacerTransformationsAPI.Prose
         }
         
         //Node Move(Node inputTree, int position, Tuple<int, bool> direction)
-        [WitnessFunction("Move", 1)]
+        [WitnessFunction("Move", 1, DependsOnParameters = new []{0})]
 
-        public DisjunctiveExamplesSpec WitnessMovePosition(GrammarRule rule, ExampleSpec spec)
+        public DisjunctiveExamplesSpec WitnessMovePosition(GrammarRule rule, ExampleSpec spec, DisjunctiveExamplesSpec treeSpec)
         {
             Console.WriteLine($"Witness Function {rule.Id} 1");
             var examples = new Dictionary<State, IEnumerable<object>>();
@@ -504,8 +507,10 @@ namespace SpacerTransformationsAPI.Prose
 
             return new DisjunctiveExamplesSpec(examples);
         }
+        #endregion
 
-/*
+        #region SquashNegation Witness Functions
+        /*
         //Node SquashNegation(Node inputTree, string symbol)
         [WitnessFunction("SquashNegation", 0)]
         public ExampleSpec WitnessSquashNegationTree(GrammarRule rule, ExampleSpec spec)
@@ -556,8 +561,10 @@ namespace SpacerTransformationsAPI.Prose
 
             return new ExampleSpec(examples);
         }
-*/
+        */
+        #endregion
 
+        #region FlipComparison Witness Functions
         //Node FlipComparison(Node inputTree, string symbol, bool flip)
         [WitnessFunction("FlipComparison", 0)]
         public ExampleSpec WitnessFlipComparisonTree(GrammarRule rule, ExampleSpec spec)
@@ -726,5 +733,6 @@ namespace SpacerTransformationsAPI.Prose
 
             return new DisjunctiveExamplesSpec(examples);
         }
+        #endregion
     }
 }
