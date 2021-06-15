@@ -9,15 +9,10 @@ language Transformations;
 
 @complete feature double Score = RankingScore;
 
-@start Node outputTree := Id(inputTree) | Move(outputTree, position, direction) | FlipComparison(inputTree, symbol, flip) | ToImp(outputTree, leftSide);
-List<int> leftSide := FilterByName(outputTree, name) | FilterByProcess(outputTree, process) | FilterStatic(outputTree, type);
+@start Node outputTree := Id(inputTree) | Move(@recurse[3] outputTree, position, direction); 
 int position := IndexByName(outputTree, name) | IndexFromFront(outputTree, index) | IndexFromBack(outputTree, index);
-bool flip := FlipByName(inputTree, name) | FlipByProcess(inputTree, process);
 
 @input Node inputTree;
 string name;
-string process;
 int index;
-StaticFilterType type;
-string symbol;
 Tuple<int, bool> direction;

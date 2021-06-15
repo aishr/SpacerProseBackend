@@ -208,16 +208,17 @@ namespace SpacerTransformationsAPI.Prose
         #region Move Witness Functions
         //Node Move(Node inputTree, int position, Tuple<int, bool> direction)
         [WitnessFunction("Move", 0)]
-        public DisjunctiveExamplesSpec WitnessMoveTree(GrammarRule rule, ExampleSpec spec)
+        public DisjunctiveExamplesSpec WitnessMoveTree(GrammarRule rule, DisjunctiveExamplesSpec spec)
         {
             Console.WriteLine($"Witness Function {rule.Id} 0");
             var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {
-                var node = (Node) spec.Examples[input];
-                if (node == null)
+                var nodes = spec.DisjunctiveExamples[input];
+                if (nodes == null)
                 {
                     return null;
+                    
                 }
 
                 if (!examples.ContainsKey(input))
@@ -225,28 +226,31 @@ namespace SpacerTransformationsAPI.Prose
                     examples[input] = new List<object>();
                 }
 
-                var children = node.Children;
-                for (var i = 0; i < children.Count; i++)
+                foreach (Node node in nodes)
                 {
-                    var possiblePlacesTrue = GeneratePossiblePlaces(children.Count, i, true);
-                    var possiblePlacesFalse = GeneratePossiblePlaces(children.Count, i, false);
+                    var children = node.Children;
+                    for (var i = 0; i < children.Count; i++)
+                    {
+                        var possiblePlacesTrue = GeneratePossiblePlaces(children.Count, i, true);
+                        var possiblePlacesFalse = GeneratePossiblePlaces(children.Count, i, false);
 
-                    foreach (var places in possiblePlacesTrue)
-                    {
-                        var direction = new Tuple<int, bool>(places, true);
-                        var actual = Semantics.Move(node, i, direction);
-                        if (actual != null && !examples[input].Contains(actual))
+                        foreach (var places in possiblePlacesTrue)
                         {
-                            ((List<object>) examples[input]).Add(actual);
+                            var direction = new Tuple<int, bool>(places, true);
+                            var actual = Semantics.Move(node, i, direction);
+                            if (actual != null && !examples[input].Contains(actual))
+                            {
+                                ((List<object>) examples[input]).Add(actual);
+                            }
                         }
-                    }
-                    foreach (var places in possiblePlacesFalse)
-                    {
-                        var direction = new Tuple<int, bool>(places, false);
-                        var actual = Semantics.Move(node, i, direction);
-                        if (actual != null && !examples[input].Contains(actual))
+                        foreach (var places in possiblePlacesFalse)
                         {
-                            ((List<object>) examples[input]).Add(actual);
+                            var direction = new Tuple<int, bool>(places, false);
+                            var actual = Semantics.Move(node, i, direction);
+                            if (actual != null && !examples[input].Contains(actual))
+                            {
+                                ((List<object>) examples[input]).Add(actual);
+                            }
                         }
                     }
                 }
@@ -259,23 +263,27 @@ namespace SpacerTransformationsAPI.Prose
         //Node Move(Node inputTree, int position, Tuple<int, bool> direction)
         [WitnessFunction("Move", 1, DependsOnParameters = new []{0})]
 
-        public DisjunctiveExamplesSpec WitnessMovePosition(GrammarRule rule, ExampleSpec spec, DisjunctiveExamplesSpec treeSpec)
+        public DisjunctiveExamplesSpec WitnessMovePosition(GrammarRule rule, DisjunctiveExamplesSpec spec, DisjunctiveExamplesSpec treeSpec)
         {
             Console.WriteLine($"Witness Function {rule.Id} 1");
             var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {
                 var before = (Node)input.Bindings.First().Value;
-                var after = (Node)spec.Examples[input];
-                var possiblePositions = WitnessMovePositionHelper(before, after);
-                for (var i = 0; i < after.Children.Count; ++i)
+                var possibleAfter = spec.DisjunctiveExamples[input];
+                foreach (Node after in possibleAfter)
                 {
-                    if (!possiblePositions.Contains(i)) continue;
-                    if (!examples.ContainsKey(input))
+                    var possiblePositions = WitnessMovePositionHelper(before, after);
+                    for (var i = 0; i < after.Children.Count; ++i)
                     {
-                        examples[input] = new List<object>();
+                        if (!possiblePositions.Contains(i)) continue;
+                        if (!examples.ContainsKey(input))
+                        {
+                            examples[input] = new List<object>();
+                        }
+                        ((List<object>)examples[input]).Add(i);
                     }
-                    ((List<object>)examples[input]).Add(i);
+                        
                 }
             }
 
