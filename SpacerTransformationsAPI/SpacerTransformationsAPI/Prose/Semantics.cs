@@ -70,7 +70,7 @@ namespace SpacerTransformationsAPI.Prose
             return result;
         }
         
-        public static IEnumerable<int> FilterByProcess(Node inputTree, string process)
+        public static IEnumerable<int> FilterByArrayIndex(Node inputTree, string index)
         {
             var result = new List<int>();
             var children = inputTree.Children;
@@ -79,11 +79,11 @@ namespace SpacerTransformationsAPI.Prose
                 var exprs = children[i].FlattenTree();
                 var indices = Utils.FindSelect(exprs.ToList());
 
-                foreach(int index in indices)
+                foreach(int ind in indices)
                 {
-                    var selectExpr = exprs[index];
+                    var selectExpr = exprs[ind];
 
-                    if (selectExpr.Args[1].ToString() == process)
+                    if (selectExpr.Args[1].ToString() == index)
                     {
                         result.Add(i);
                     }

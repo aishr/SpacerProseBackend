@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ProgramSynthesis;
-using Microsoft.ProgramSynthesis.Extraction.Text;
 using Microsoft.ProgramSynthesis.Learning;
 using Microsoft.ProgramSynthesis.Rules;
 using Microsoft.ProgramSynthesis.Specifications;
@@ -20,9 +19,10 @@ namespace SpacerTransformationsAPI.Prose
         //Given inputTree, I and outputTree, O, WitnessLeftSide(I, O) = R
         //where for every r in R, Transform2(I, r) = O
         // [a, b, c] -> [a], [b], [c], [a,b], [a,c], [a,b,c]
-        [WitnessFunction("ToImp", 1)]
+        [WitnessFunction(nameof(Semantics.ToImp), 1)]
         public ExampleSpec WitnessToImpLeftSide(GrammarRule rule, ExampleSpec spec)
         {
+            Console.WriteLine($"Witness Function {rule.Id} 1");
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
             {
@@ -45,28 +45,45 @@ namespace SpacerTransformationsAPI.Prose
             return new ExampleSpec(examples);
         }
 
-        [WitnessFunction("JoinFilters", 0)]
-        public DisjunctiveExamplesSpec WitnessJoinFiltersFilterOne(GrammarRule rule, ExampleSpec spec)
+        [WitnessFunction(nameof(Semantics.JoinFilters), 0, Verify = true)]
+        public DisjunctiveExamplesSpec WitnessJoinFiltersFilterOne(GrammarRule rule, DisjunctiveExamplesSpec spec)
         {
-            var examples = new Dictionary<State, object>();
+            Console.WriteLine($"Witness Function {rule.Id} 0");
+            var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {
-                var before = (IEnumerable<int>) input[rule.Body[0]];
-                var after = (IEnumerable<int>) spec.Examples[input];
+                var after = (List<int>) spec.DisjunctiveExamples[input].First();
+                if (after.Count() < 2)
+                {
+                    return null;
+                }
+                if (!examples.ContainsKey(input))
+                {
+                    examples[input] = new List<IEnumerable<int>>();
+                }
+
+                for (var i = 1; i < after.Count; i++)
+                {
+                    var possibleArrays = Utils.GetKCombs(after, i);
+                    var possibleLists = possibleArrays.Select(x => x.ToList());
+                    examples[input] = ((List<IEnumerable<int>>) examples[input]).Concat(possibleLists);
+
+                }
+                
             }
 
-            return new ExampleSpec(examples);
+            return new DisjunctiveExamplesSpec(examples);
         }
 
-        [WitnessFunction("JoinFilters", 1, DependsOnParameters = new [] {0})]
-        public DisjunctiveExamplesSpec WitnessJoinFiltersFilterTwo(GrammarRule rule, ExampleSpec spec,
-            ExampleSpec filterOneSpec)
+        [WitnessFunction(nameof(Semantics.JoinFilters), 1, DependsOnParameters = new [] {0})]
+        public DisjunctiveExamplesSpec WitnessJoinFiltersFilterTwo(GrammarRule rule, DisjunctiveExamplesSpec spec, DisjunctiveExamplesSpec filterOneSpec)
         {
+            Console.WriteLine($"Witness Function {rule.Id} 1");
             var examples = new Dictionary<State, object>();
             foreach (var input in spec.ProvidedInputs)
             {
-                var before = (IEnumerable<int>) input[rule.Body[0]];
-                var after = (IEnumerable<int>) spec.Examples[input];
+                var before = (IEnumerable<int>) input.Bindings.First().Value;
+                //var after = (IEnumerable<int>) spec.Examples[input];
             }
 
             return new ExampleSpec(examples);
@@ -75,9 +92,10 @@ namespace SpacerTransformationsAPI.Prose
 
 
         //IEnumerable<int> FilterByName(Node inputTree, string name)
-        [WitnessFunction("FilterByName", 1)]
+        [WitnessFunction(nameof(Semantics.FilterByName), 1)]
         public DisjunctiveExamplesSpec WitnessFilterByNameName(GrammarRule rule, ExampleSpec spec)
         {
+            Console.WriteLine($"Witness Function {rule.Id} 1");
             var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {
@@ -102,9 +120,10 @@ namespace SpacerTransformationsAPI.Prose
         }
         
         //IEnumerable<int> FilterByProcess(Node inputTree, string process)
-        [WitnessFunction("FilterByProcess", 1)]
+        [WitnessFunction(nameof(Semantics.FilterByArrayIndex), 1)]
         public DisjunctiveExamplesSpec WitnessFilterByProcessProcess(GrammarRule rule, ExampleSpec spec)
         {
+            Console.WriteLine($"Witness Function {rule.Id} 1");
             var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {
@@ -113,7 +132,7 @@ namespace SpacerTransformationsAPI.Prose
                 var children = before.GetProcesses();    
                 foreach (var child in children)
                 {
-                    if (Semantics.FilterByProcess(before, child).OrderBy(i => i)
+                    if (Semantics.FilterByArrayIndex(before, child).OrderBy(i => i)
                         .SequenceEqual(after.OrderBy(i => i)))
                     {
                         if (!examples.ContainsKey(input))
@@ -130,9 +149,10 @@ namespace SpacerTransformationsAPI.Prose
         
         
         //IEnumerable<int> FilterStatic(Node inputTree, StaticFilterType type)
-        [WitnessFunction("FilterStatic", 1)]
+        [WitnessFunction(nameof(Semantics.FilterStatic), 1)]
         public DisjunctiveExamplesSpec WitnessFilterStaticType(GrammarRule rule, ExampleSpec spec)
         {
+            Console.WriteLine($"Witness Function {rule.Id} 1");
             var examples = new Dictionary<State, IEnumerable<object>>();
             foreach (var input in spec.ProvidedInputs)
             {

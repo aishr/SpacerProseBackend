@@ -23,14 +23,14 @@ namespace SpacerTransformationsAPI.Prose
         [FeatureCalculator("FilterStatic")]
         public static double Score_FilterStatic(double inputTree, double type) => inputTree + type;
         
-        [FeatureCalculator("FilterByProcess")]
-        public static double Score_FilterByProcess(double inputTree, double process) => inputTree + process;
+        [FeatureCalculator("FilterByArrayIndex")]
+        public static double Score_FilterByArrayIndex(double inputTree, double process) => inputTree + process;
         
         [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
         public static double NameScore(string type) => (type.Equals("any")) ? 0 : 1;
         
-        [FeatureCalculator("process", Method = CalculationMethod.FromLiteral)]
-        public static double ProcessScore(string type) => (type.Equals("any")) ? 0 : 1;
+        [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
+        public static double IndexScore(string type) => (type.Equals("any")) ? 0 : 1;
         
         [FeatureCalculator("type", Method = CalculationMethod.FromLiteral)]
         public static double TypeScore(StaticFilterType type) => 2;

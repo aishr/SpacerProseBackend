@@ -11,9 +11,9 @@ language Transformations;
 
 @start Node outputTree := ToImp(inputTree, leftSide);
 List<int> leftSide := filter | JoinFilters(filter, filter);
-List<int> filter := FilterByName(inputTree, name) | FilterByProcess(inputTree, process) | FilterStatic(inputTree, type);
+List<int> filter := FilterByName(inputTree, name) | FilterByArrayIndex(inputTree, index) | FilterStatic(inputTree, type); 
 
 @input Node inputTree;
 string name;
-string process;
+string index;
 StaticFilterType type;
