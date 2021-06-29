@@ -73,13 +73,14 @@ namespace SpacerTransformationsAPI.Controllers
                             UseThreads = false,
                             CacheSize = int.MaxValue
                         });
-                    learned = _prose.LearnGrammarTopK(spec, scoreFeature);
+                    learned = _prose.LearnGrammar(spec);
                 }
 
                 var finalPrograms = learned.RealizedPrograms.Select(program => new FinalProgram(program.ToString(), program.PrintAST())).ToList();
                 if (finalPrograms.Count == 0) {
                     Console.WriteLine("No Programs Found");
                 }
+                
 
                 foreach (var program in finalPrograms)
                 {

@@ -12,57 +12,57 @@ namespace SpacerTransformationsAPI.Prose
         public static double ScoreForContext = 0;
         
         [FeatureCalculator("ToImp")]
-        public static double Score_ToImp(double inputTree, double leftSide) => leftSide;
+        public static double Score_ToImp(double inputTree, double leftSide) => inputTree + leftSide;
 
         [FeatureCalculator("FilterByName")]
-        public static double Score_Filter(double inputTree, double name) => name;
+        public static double Score_Filter(double inputTree, double name) => inputTree + name;
         
         [FeatureCalculator("FilterStatic")]
-        public static double Score_FilterStatic(double inputTree, double type) => type;
+        public static double Score_FilterStatic(double inputTree, double type) => inputTree + type;
         
         [FeatureCalculator("FilterByProcess")]
-        public static double Score_FilterByProcess(double inputTree, double process) => process;
+        public static double Score_FilterByProcess(double inputTree, double process) => inputTree + process;
         
         [FeatureCalculator("Move")]
-        public static double Score_Move(double inputTree, double position, double direction) => position;
+        public static double Score_Move(double inputTree, double position, double direction) => inputTree + position + direction;
 
         [FeatureCalculator("IndexByName")]
-        public static double Score_IndexByName(double inputTree, double name) => name;
+        public static double Score_IndexByName(double inputTree, double name) => inputTree + name;
 
         [FeatureCalculator("IndexFromFront")]
-        public static double Score_IndexFromFront(double inputTree, double index) => index;
+        public static double Score_IndexFromFront(double inputTree, double index) => inputTree + index;
 
         [FeatureCalculator("IndexFromBack")]
-        public static double Score_IndexFromBack(double inputTree, double index) => index;
+        public static double Score_IndexFromBack(double inputTree, double index) => inputTree + index;
         
         [FeatureCalculator("SquashNegation")]
-        public static double Score_SquashNegation(double inputTree, double symbol) => symbol;
+        public static double Score_SquashNegation(double inputTree, double symbol) => inputTree + symbol;
 
         [FeatureCalculator("FlipComparison")]
-        public static double Score_FlipComparison(double inputTree, double symbol, double flip) => symbol;
+        public static double Score_FlipComparison(double inputTree, double symbol, double flip) => inputTree + symbol + flip;
 
         [FeatureCalculator("FlipByName")]
-        public static double Score_FlipByName(double inputTree, double name) => name;
+        public static double Score_FlipByName(double inputTree, double name) => inputTree + name;
 
         [FeatureCalculator("FlipByProcess")]
-        public static double Score_FlipByProcess(double inputTree, double process) => process;
+        public static double Score_FlipByProcess(double inputTree, double process) => inputTree + process;
         
         [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
-        public static double NameScore(string type) => (type.Equals("any")) ? 1 : 3;
+        public static double NameScore(string type) => (type.Equals("any")) ? 0 : 1;
         
         [FeatureCalculator("process", Method = CalculationMethod.FromLiteral)]
-        public static double ProcessScore(string type) => (type.Equals("any")) ? 1 : 3;
+        public static double ProcessScore(string type) => (type.Equals("any")) ? 0 : 1;
         
         [FeatureCalculator("type", Method = CalculationMethod.FromLiteral)]
-        public static double TypeScore(StaticFilterType type) => 3;
+        public static double TypeScore(StaticFilterType type) => 2;
 
         [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
-        public static double IndexScore(int type) => type < 0 ? 1 : 3;
+        public static double IndexScore(int type) => type < 0 ? 0 : 1;
         
         [FeatureCalculator("symbol", Method = CalculationMethod.FromLiteral)]
-        public static double SymbolScore(string type) => (type.Equals("any")) ? 1 : 3;
+        public static double SymbolScore(string type) => (type.Equals("any")) ? 0 : 1;
         
         [FeatureCalculator("left", Method = CalculationMethod.FromLiteral)]
-        public static double LeftScore(bool type) => 3;
+        public static double LeftScore(bool type) => 1;
     }
 }

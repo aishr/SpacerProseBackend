@@ -89,9 +89,11 @@ namespace SpacerTransformationsAPI.Functions
              {
                  Console.WriteLine(example);
                  var input = SmtLib.StringToSmtLib(ctx, string.Format(prefix, declareStatements, example.Input));
+                 
                  var inputTree = Utils.HandleSmtLibParsed(input, ctx);
                  var output = SmtLib.StringToSmtLib(ctx, string.Format(prefix, declareStatements, example.Output));
                  var outputTree = Utils.HandleSmtLibParsed(output, ctx);
+                 
                  results.Add(new Tuple<Node, Node>(inputTree, outputTree));
              }
 
