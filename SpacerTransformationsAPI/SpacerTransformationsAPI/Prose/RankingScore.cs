@@ -14,6 +14,9 @@ namespace SpacerTransformationsAPI.Prose
         [FeatureCalculator("ToImp")]
         public static double Score_ToImp(double inputTree, double leftSide) => inputTree + leftSide;
 
+        [FeatureCalculator("JoinFilters")]
+        public static double Score_JoinFilters(double filter1, double filter2) => filter1 + filter2;
+
         [FeatureCalculator("FilterByName")]
         public static double Score_Filter(double inputTree, double name) => inputTree + name;
         
@@ -22,30 +25,6 @@ namespace SpacerTransformationsAPI.Prose
         
         [FeatureCalculator("FilterByProcess")]
         public static double Score_FilterByProcess(double inputTree, double process) => inputTree + process;
-        
-        [FeatureCalculator("Move")]
-        public static double Score_Move(double inputTree, double position, double direction) => inputTree + position + direction;
-
-        [FeatureCalculator("IndexByName")]
-        public static double Score_IndexByName(double inputTree, double name) => inputTree + name;
-
-        [FeatureCalculator("IndexFromFront")]
-        public static double Score_IndexFromFront(double inputTree, double index) => inputTree + index;
-
-        [FeatureCalculator("IndexFromBack")]
-        public static double Score_IndexFromBack(double inputTree, double index) => inputTree + index;
-        
-        [FeatureCalculator("SquashNegation")]
-        public static double Score_SquashNegation(double inputTree, double symbol) => inputTree + symbol;
-
-        [FeatureCalculator("FlipComparison")]
-        public static double Score_FlipComparison(double inputTree, double symbol, double flip) => inputTree + symbol + flip;
-
-        [FeatureCalculator("FlipByName")]
-        public static double Score_FlipByName(double inputTree, double name) => inputTree + name;
-
-        [FeatureCalculator("FlipByProcess")]
-        public static double Score_FlipByProcess(double inputTree, double process) => inputTree + process;
         
         [FeatureCalculator("name", Method = CalculationMethod.FromLiteral)]
         public static double NameScore(string type) => (type.Equals("any")) ? 0 : 1;
@@ -56,13 +35,5 @@ namespace SpacerTransformationsAPI.Prose
         [FeatureCalculator("type", Method = CalculationMethod.FromLiteral)]
         public static double TypeScore(StaticFilterType type) => 2;
 
-        [FeatureCalculator("index", Method = CalculationMethod.FromLiteral)]
-        public static double IndexScore(int type) => type < 0 ? 0 : 1;
-        
-        [FeatureCalculator("symbol", Method = CalculationMethod.FromLiteral)]
-        public static double SymbolScore(string type) => (type.Equals("any")) ? 0 : 1;
-        
-        [FeatureCalculator("left", Method = CalculationMethod.FromLiteral)]
-        public static double LeftScore(bool type) => 1;
     }
 }
